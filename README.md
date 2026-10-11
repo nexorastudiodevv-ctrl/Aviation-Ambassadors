@@ -1,14 +1,12 @@
-# رحلاتك – منصة مقارنة تذاكر الطيران
+# سفراء الطيران
+
+موقع عربي لاكتشاف عروض الرحلات وتحويل الزوار إلى شركات الطيران وشركاء الحجز. الموقع لا يعالج الحجوزات أو المدفوعات مباشرة.
 
 ## التشغيل المحلي
-افتح `index.html` في المتصفح مباشرة.
+افتح `index.html` في المتصفح، أو شغّل خادم ملفات ثابتة من مجلد المشروع.
 
-## النشر على GitHub Pages
-1. أنشئ مستودعاً جديداً وارفع محتويات المجلد (index.html و .nojekyll).
-2. Settings ← Pages ← Source: Deploy from a branch ← main / root.
-3. (اختياري) لدومين مخصص: أضف ملف `CNAME` يحتوي دومينك فقط.
-
-## التخصيص
-- الصق كود Travelpayouts داخل `<div id="search-widget">`.
-- عدّل `SITE_CONFIG` ومصفوفة `DESTINATIONS` داخل وسم script.
-- ابحث عن `YOUR-DOMAIN.com` واستبدله بدومينك.
+## النشر والفهرسة
+1. فعّل GitHub Pages من Settings → Pages، واختر الفرع `main` والمجلد الجذر.
+2. بعد ظهور الموقع على `https://nexorastudiodevv-ctrl.github.io/sofara/`، أضفه إلى Google Search Console وأرسل `https://nexorastudiodevv-ctrl.github.io/sofara/sitemap.xml`.
+3. عند استخدام نطاق مخصص، حدّث روابط النطاق في `index.html` و`pages/details.html` و`robots.txt` و`sitemap.xml` قبل إعادة النشر.
+4. تأكد من تحديث العروض والأسعار وتفاصيل الرحلات دوريًا؛ الأسعار المعروضة تتغير وليست ضمانًا للحجز.
