@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /rehlatak/
 
-Sitemap: https://nexorastudiodevv-ctrl.github.io/sofara/sitemap.xml
+Sitemap: https://sofara.nexorastudio-eg.com/sitemap.xml

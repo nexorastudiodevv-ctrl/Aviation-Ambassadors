@@ -6,7 +6,7 @@
 افتح `index.html` في المتصفح، أو شغّل خادم ملفات ثابتة من مجلد المشروع.
 
 ## النشر والفهرسة
-1. فعّل GitHub Pages من Settings → Pages، واختر الفرع `main` والمجلد الجذر.
-2. بعد ظهور الموقع على `https://nexorastudiodevv-ctrl.github.io/sofara/`، أضفه إلى Google Search Console وأرسل `https://nexorastudiodevv-ctrl.github.io/sofara/sitemap.xml`.
-3. عند استخدام نطاق مخصص، حدّث روابط النطاق في `index.html` و`pages/details.html` و`robots.txt` و`sitemap.xml` قبل إعادة النشر.
+1. تأكد من تفعيل GitHub Pages من Settings → Pages، واختر الفرع `main` والمجلد الجذر.
+2. بعد عمل النطاق `https://sofara.nexorastudio-eg.com/`، أضفه إلى Google Search Console وأرسل `https://sofara.nexorastudio-eg.com/sitemap.xml`.
+3. عند تغيير النطاق المخصص، حدّث روابط النطاق في `index.html` و`pages/details.html` و`robots.txt` و`sitemap.xml` قبل إعادة النشر.
 4. تأكد من تحديث العروض والأسعار وتفاصيل الرحلات دوريًا؛ الأسعار المعروضة تتغير وليست ضمانًا للحجز.
