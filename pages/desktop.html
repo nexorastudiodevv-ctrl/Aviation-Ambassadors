@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سفراء الطيران | شاشة سطح المكتب</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/desktop.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-icon">✈️</div>
+        <span>سفراء الطيران</span>
+      </div>
+
+      <nav class="main-nav" id="desktopNav">
+        <a href="../index.html">الرئيسية</a>
+        <a href="#offers">العروض</a>
+        <a href="#destinations">الوجهات</a>
+        <a href="#partners">الشركات</a>
+      </nav>
+
+      <button class="nav-toggle" id="desktopNavToggle" aria-label="فتح القائمة">القائمة</button>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="hero-copy">
+          <span class="eyebrow">أفضل العروض</span>
+          <h1>رحلات عالمية بأسعار ذكية</h1>
+          <p>اكتشف أفضل صفقات الطيران من شركات موثوقة، واحصل على عروض عمولة خاصة من أكثر الوجهات طلباً.</p>
+
+          <div class="hero-icons">
+            <div class="icon-pill">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M12 3v18M6 6l12 12M18 6L6 18"/></svg>
+              مقارنة سريعة
+            </div>
+            <div class="icon-pill">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4zm-1 5h2v5h3v2h-5V7z"/></svg>
+              عروض موثوقة
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <a href="#offers" class="primary-btn">استكشف العروض</a>
+            <a href="booking.html" class="secondary-btn">احصل على عرض خاص</a>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="عروض طيران">
+          <div class="photo-panel">
+            <div class="flight-badge">أرخص الأسعار</div>
+            <div class="mini-card stat-card">
+              <span>توفير متوسط</span>
+              <strong>32%</strong>
+            </div>
+          </div>
+
+          <div class="search-panel">
+            <h2>ابحث عن الرحلة المناسبة</h2>
+            <form class="flight-form">
+              <div class="field-row">
+                <label>
+                  <span>من</span>
+                  <input type="text" value="الرياض" />
+                </label>
+                <label>
+                  <span>إلى</span>
+                  <input type="text" value="دبي" />
+                </label>
+              </div>
+
+              <div class="field-row">
+                <label>
+                  <span>تاريخ الذهاب</span>
+                  <input type="date" value="2026-11-20" />
+                </label>
+                <label>
+                  <span>تاريخ العودة</span>
+                  <input type="date" value="2026-11-27" />
+                </label>
+              </div>
+
+              <div class="field-row">
+                <label>
+                  <span>نوع السفر</span>
+                  <select>
+                    <option>ذهاب وعودة</option>
+                    <option>ذهاب فقط</option>
+                  </select>
+                </label>
+                <label>
+                  <span>المسافرين</span>
+                  <select>
+                    <option>2 بالغين</option>
+                    <option>1 بالغ</option>
+                    <option>عائلة</option>
+                  </select>
+                </label>
+              </div>
+
+              <button class="search-btn" type="button">ابحث عن العروض</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="offers" id="offers">
+        <div class="section-heading">
+          <span>أفضل العروض</span>
+          <h3>عروض مميزة من أفضل شركات الطيران</h3>
+        </div>
+
+        <div class="offer-grid">
+          <article class="offer-card">
+            <div class="offer-top">
+              <span class="airline">طيران الإمارات</span>
+              <span class="price">699 ر.س</span>
+            </div>
+            <div class="offer-thumb dubai-thumb"></div>
+            <p>الرياض → دبي</p>
+            <small>من 3 ساعات • خصم 32%</small>
+            <a href="https://www.emirates.com/" class="deal-link" target="_blank" rel="noreferrer">احصل على العرض</a>
+          </article>
+
+          <article class="offer-card">
+            <div class="offer-top">
+              <span class="airline">فلاي ناس</span>
+              <span class="price">540 ر.س</span>
+            </div>
+            <div class="offer-thumb cairo-thumb"></div>
+            <p>جدة → القاهرة</p>
+            <small>من 2.5 ساعات • خصم 28%</small>
+            <a href="https://www.flynas.com/" class="deal-link" target="_blank" rel="noreferrer">احصل على العرض</a>
+          </article>
+
+          <article class="offer-card">
+            <div class="offer-top">
+              <span class="airline">الاتحاد</span>
+              <span class="price">760 ر.س</span>
+            </div>
+            <div class="offer-thumb london-thumb"></div>
+            <p>جدة → لندن</p>
+            <small>من 5 ساعات • خصم 26%</small>
+            <a href="https://www.etihad.com/" class="deal-link" target="_blank" rel="noreferrer">احصل على العرض</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="destinations" id="destinations">
+        <div class="section-heading">
+          <span>وجهات شائعة</span>
+          <h3>اختر وجهتك القادمة</h3>
+        </div>
+
+        <div class="destination-grid">
+          <div class="destination-card dubai">دبي</div>
+          <div class="destination-card istanbul">إسطنبول</div>
+          <div class="destination-card paris">باريس</div>
+          <div class="destination-card cairo">القاهرة</div>
+        </div>
+      </section>
+
+      <section id="partners" class="partner-section">
+        <div class="section-heading">
+          <span>شركاؤنا</span>
+          <h3>شركات طيران موثوقة</h3>
+        </div>
+        <div class="partner-grid">
+          <div>Emirates</div>
+          <div>flynas</div>
+          <div>Etihad</div>
+          <div>Qatar</div>
+          <div>Turkish</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="about">
+      <p>© <span id="year">2026</span> سفراء الطيران • عروض مميزة للرحلات العالمية</p>
+      <a href="../index.html">العودة إلى الصفحة الرئيسية</a>
+    </footer>
+
+    <script src="../assets/js/desktop.js"></script>
+  </body>
+</html>

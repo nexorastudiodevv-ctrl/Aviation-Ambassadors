@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>رحلاتك | الحجز</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/booking.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">
+          <span>✈</span>
+        </div>
+        <div>
+          <div class="brand-name">رحلاتك</div>
+          <small>travel hub</small>
+        </div>
+      </div>
+
+      <nav class="main-nav">
+        <a href="../index.html">الرئيسية</a>
+        <a href="details.html">تفاصيل الرحلة</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      <section class="booking-card">
+        <div class="booking-header">
+          <div>
+            <span class="eyebrow">إكمال الحجز</span>
+            <h1>بيانات المسافر</h1>
+          </div>
+          <div class="secure-pill">🔒 دفع آمن</div>
+        </div>
+
+        <div class="booking-grid">
+          <form class="booking-form">
+            <div class="two-col">
+              <label>
+                <span>الاسم الأول</span>
+                <input type="text" value="أحمد" />
+              </label>
+              <label>
+                <span>اسم العائلة</span>
+                <input type="text" value="الرحمن" />
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label>
+                <span>البريد الإلكتروني</span>
+                <input type="email" value="ahmed@example.com" />
+              </label>
+              <label>
+                <span>رقم الهاتف</span>
+                <input type="tel" value="966500000000" />
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label>
+                <span>الجنسية</span>
+                <select>
+                  <option>السعودية</option>
+                  <option>الإمارات</option>
+                  <option>مصر</option>
+                </select>
+              </label>
+              <label>
+                <span>نوع الوثيقة</span>
+                <select>
+                  <option>جواز سفر</option>
+                  <option>هوية وطنية</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="two-col">
+              <label>
+                <span>رقم الوثيقة</span>
+                <input type="text" value="A123456" />
+              </label>
+              <label>
+                <span>تاريخ الميلاد</span>
+                <input type="date" value="1995-04-12" />
+              </label>
+            </div>
+
+            <div class="travel-options">
+              <label class="option-card selected">
+                <input type="radio" name="traveler" checked />
+                <span>مسافر واحد</span>
+              </label>
+              <label class="option-card">
+                <input type="radio" name="traveler" />
+                <span>مسافران</span>
+              </label>
+              <label class="option-card">
+                <input type="radio" name="traveler" />
+                <span>عائلة</span>
+              </label>
+            </div>
+
+            <div class="payment-box">
+              <h3>طريقة الدفع</h3>
+              <div class="payment-methods">
+                <label class="method selected">
+                  <input type="radio" name="payment" checked />
+                  <span>بطاقة ائتمان</span>
+                </label>
+                <label class="method">
+                  <input type="radio" name="payment" />
+                  <span>Apple Pay</span>
+                </label>
+                <label class="method">
+                  <input type="radio" name="payment" />
+                  <span>تحويل بنكي</span>
+                </label>
+              </div>
+            </div>
+
+            <button class="submit-btn" type="button">تأكيد الحجز الآن</button>
+          </form>
+
+          <aside class="summary-panel">
+            <div class="trip-summary">
+              <h2>رحلة الرياض - دبي</h2>
+              <p>طيران الإمارات • 20 نوفمبر إلى 27 نوفمبر</p>
+            </div>
+
+            <div class="summary-list">
+              <div><span>عدد المسافرين</span><strong>1</strong></div>
+              <div><span>الفئة</span><strong>اقتصادي</strong></div>
+              <div><span>المقعد</span><strong>أمام</strong></div>
+              <div><span>تأمين الرحلة</span><strong>مفعل</strong></div>
+            </div>
+
+            <div class="total-box">
+              <span>الإجمالي</span>
+              <strong>1,668 ر.س</strong>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="../assets/js/booking.js"></script>
+  </body>
+</html>

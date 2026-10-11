@@ -1,0 +1,238 @@
+:root {
+  --bg: #edf6ff;
+  --ink: #113449;
+  --navy: #102d3d;
+  --gold: #ffb400;
+  --card: #ffffff;
+  --muted: #617888;
+  --line: rgba(17, 52, 73, 0.12);
+  --shadow: 0 16px 30px rgba(17, 52, 73, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #dfefff 0%, #edf6ff 100%);
+  display: flex;
+  justify-content: center;
+  padding: 30px 16px;
+  font-family: "Cairo", sans-serif;
+  color: var(--ink);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.phone-shell {
+  width: min(100%, 420px);
+  background: #f7fbff;
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid rgba(17, 52, 73, 0.07);
+}
+
+.mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 14px;
+  background: var(--navy);
+  color: #fff;
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  font-size: 1.5rem;
+}
+
+.brand-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 180, 0, 0.12);
+  color: var(--gold);
+}
+
+.menu-btn {
+  border: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  cursor: pointer;
+  font-size: 1.3rem;
+}
+
+.mobile-nav {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 18px 8px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-nav.open {
+  display: flex;
+}
+
+.mobile-nav a {
+  padding: 8px 0;
+  font-weight: 700;
+}
+
+.mobile-main {
+  padding: 20px 18px 16px;
+}
+
+.mobile-hero {
+  background: linear-gradient(135deg, rgba(16, 45, 61, 0.96), rgba(26, 83, 114, 0.92)),
+    url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=80') center/cover no-repeat;
+  color: #fff;
+  border-radius: 22px;
+  padding: 22px 18px;
+  box-shadow: var(--shadow);
+}
+
+.label {
+  display: inline-block;
+  background: rgba(255, 180, 0, 0.12);
+  color: #ffd871;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.mobile-hero h1 {
+  margin: 14px 0 8px;
+  font-size: 2.2rem;
+  line-height: 1.2;
+}
+
+.mobile-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.search-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  margin-top: 18px;
+  padding: 18px;
+  box-shadow: 0 12px 24px rgba(16, 45, 61, 0.06);
+}
+
+.trip-row,
+.date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.trip-row span,
+.date-row span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.swap {
+  text-align: center;
+  margin: 8px 0;
+  font-size: 1.5rem;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.mobile-search-btn {
+  width: 100%;
+  background: var(--gold);
+  color: var(--ink);
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-top: 18px;
+  font-weight: 800;
+}
+
+.offers-block {
+  margin-top: 22px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.section-head a {
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.mini-offer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.mini-offer strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.mini-offer small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.mini-offer span {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.mobile-footer {
+  padding: 16px 18px 24px;
+  text-align: center;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+}

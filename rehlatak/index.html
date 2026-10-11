@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>رحلاتك | قارن أسعار تذاكر الطيران واحجز بأفضل سعر</title>
+  <meta name="description" content="قارن أسعار تذاكر الطيران من مئات الشركات في ثوانٍ واحجز رحلتك بأفضل سعر وبدون رسوم خفية.">
+  <!-- ✏️ عدّل الرابط التالي إلى دومينك الفعلي -->
+  <link rel="canonical" href="https://YOUR-DOMAIN.com/">
+  <meta name="theme-color" content="#0b3954">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+
+  <!-- الخط: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS v4 عبر CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11"></script>
+
+  <style type="text/tailwindcss">
+    /* ===== رموز التصميم (Design Tokens) ===== */
+    @theme {
+      --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+      --color-ink: #0b3954;      /* أزرق بحري عميق */
+      --color-sky: #eef5fa;      /* خلفية سماوية فاتحة */
+      --color-sun: #ffb400;      /* أصفر شمسي للأزرار */
+      --color-sun-dark: #e09f00;
+      --color-lagoon: #1b8a9a;   /* أزرق مخضر للتفاصيل */
+    }
+    html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+    body { font-family: var(--font-sans); }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    :focus-visible { outline: 3px solid var(--color-sun); outline-offset: 2px; }
+  </style>
+</head>
+
+<body class="bg-sky text-ink antialiased">
+
+  <!-- ===================== Header ===================== -->
+  <header class="sticky top-0 z-50 bg-ink/95 backdrop-blur text-white shadow-md">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <a href="#home" class="flex items-center gap-2 text-2xl font-black">
+        <!-- أيقونة طائرة -->
+        <svg class="h-7 w-7 -scale-x-100 text-sun" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+        <span>رحلاتك</span>
+      </a>
+
+      <nav class="hidden md:block" aria-label="القائمة الرئيسية">
+        <ul class="flex items-center gap-8 font-semibold">
+          <li><a class="hover:text-sun" href="#home">الرئيسية</a></li>
+          <li><a class="hover:text-sun" href="#search">عروض الطيران</a></li>
+          <li><a class="hover:text-sun" href="#destinations">الوجهات</a></li>
+          <li><a class="hover:text-sun" href="#about">من نحن</a></li>
+        </ul>
+      </nav>
+
+      <button id="menu-btn" class="md:hidden rounded-lg p-2 hover:bg-white/10" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mobile-menu">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <!-- قائمة الجوال -->
+    <nav id="mobile-menu" class="hidden border-t border-white/10 md:hidden" aria-label="قائمة الجوال">
+      <ul class="flex flex-col px-4 py-2 font-semibold">
+        <li><a class="block py-3" href="#home">الرئيسية</a></li>
+        <li><a class="block py-3" href="#search">عروض الطيران</a></li>
+        <li><a class="block py-3" href="#destinations">الوجهات</a></li>
+        <li><a class="block py-3" href="#about">من نحن</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===================== Hero ===================== -->
+    <section id="home" class="relative bg-ink text-white">
+      <div class="mx-auto max-w-6xl px-4 pb-40 pt-14 text-center sm:pt-20">
+        <h1 class="text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
+          الرحلة القادمة أقرب<br class="hidden sm:block"> مما تتخيل
+        </h1>
+        <p class="mx-auto mt-5 max-w-xl text-lg text-white/80">
+          نبحث لك في أسعار مئات شركات الطيران في ثوانٍ، لتختار أرخص رحلة بتاريخك ووجهتك.
+        </p>
+      </div>
+      <!-- حافة منحنية تفصل القسم -->
+      <svg class="absolute bottom-0 left-0 w-full text-sky" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 80h1440V30C1100 80 700 0 0 50z"/></svg>
+    </section>
+
+    <!-- ===================== Search Widget ===================== -->
+    <section id="search" class="relative z-10 mx-auto -mt-32 max-w-5xl px-4">
+      <div class="rounded-3xl bg-white p-4 shadow-xl shadow-ink/10 sm:p-6">
+        <h2 class="mb-4 text-xl font-extrabold">ابحث عن رحلتك</h2>
+
+        <!-- ╔════════════════════════════════════════════════════╗
+             ║  🔽 الصق كود Travelpayouts / Aviasales Widget هنا 🔽  ║
+             ╚════════════════════════════════════════════════════╝
+             داخل الحاوية التالية فقط (احذف الـ placeholder بعد اللصق).
+             مثال: <script async src="https://tp.media/content?...&marker=XXXXX"></script> -->
+        <div id="search-widget" class="min-h-[220px]" dir="ltr">
+          <!-- Placeholder: يظهر حتى تضيف الكود الفعلي -->
+          <div id="widget-placeholder" dir="rtl" class="flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-lagoon/40 bg-sky p-6 text-center">
+            <p class="font-bold">مساحة ودجت البحث</p>
+            <p class="max-w-md text-sm text-ink/70">افتح ملف <code class="rounded bg-white px-1">index.html</code> وابحث عن <code class="rounded bg-white px-1">search-widget</code> ثم الصق كود Travelpayouts داخله.</p>
+          </div>
+        </div>
+        <!-- نهاية حاوية الودجت -->
+      </div>
+    </section>
+
+    <!-- ===================== Features ===================== -->
+    <section id="about" class="mx-auto max-w-6xl px-4 py-20">
+      <h2 class="text-center text-3xl font-black">لماذا تحجز مع رحلاتك؟</h2>
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        <article class="rounded-2xl bg-white p-6 shadow-sm">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-ink text-sun">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M3 6h18M6 12h12M10 18h4"/></svg>
+          </div>
+          <h3 class="text-lg font-extrabold">مقارنة شاملة</h3>
+          <p class="mt-2 text-ink/70">نجمع لك عروض مئات شركات الطيران ووكالات السفر في صفحة واحدة.</p>
+        </article>
+        <article class="rounded-2xl bg-white p-6 shadow-sm">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-ink text-sun">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.7 0-3 .9-3 2s1.3 2 3 2 3 .9 3 2-1.3 2-3 2m0-8V6m0 12v-2m9-4a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+          </div>
+          <h3 class="text-lg font-extrabold">أحدث الأسعار، بلا رسوم خفية</h3>
+          <p class="mt-2 text-ink/70">السعر الذي تراه هو ما تدفعه، ونحدّث الأسعار باستمرار.</p>
+        </article>
+        <article class="rounded-2xl bg-white p-6 shadow-sm">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-ink text-sun">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.6-2A12 12 0 0 1 12 3a12 12 0 0 1-8.6 3A12 12 0 0 0 12 21a12 12 0 0 0 8.6-13z"/></svg>
+          </div>
+          <h3 class="text-lg font-extrabold">حجز آمن ومباشر</h3>
+          <p class="mt-2 text-ink/70">تُكمل الحجز مباشرة مع المزوّد الرسمي عبر بوابات دفع موثوقة.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== Popular Destinations ===================== -->
+    <section id="destinations" class="bg-white py-20">
+      <div class="mx-auto max-w-6xl px-4">
+        <h2 class="text-center text-3xl font-black">وجهات يبحث عنها المسافرون</h2>
+        <p class="mt-2 text-center text-ink/70">اختر وجهتك وابدأ البحث فوراً.</p>
+
+        <!-- تُولَّد البطاقات من مصفوفة DESTINATIONS في الأسفل -->
+        <div id="destinations-grid" class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== Footer ===================== -->
+  <footer class="bg-ink text-white/80">
+    <div class="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3">
+      <div>
+        <p class="text-2xl font-black text-white">رحلاتك</p>
+        <p class="mt-2 text-sm">محرك بحث ومقارنة لتذاكر الطيران. قد نحصل على عمولة عند الحجز عبر شركائنا دون أي تكلفة إضافية عليك.</p>
+      </div>
+      <div>
+        <p class="font-bold text-white">مستندات</p>
+        <ul class="mt-2 space-y-1 text-sm">
+          <!-- ✏️ استبدل # بروابط الصفحات الفعلية -->
+          <li><a class="hover:text-sun" href="#">سياسة الخصوصية</a></li>
+          <li><a class="hover:text-sun" href="#">شروط الاستخدام</a></li>
+          <li><a class="hover:text-sun" href="#">إفصاح التسويق بالعمولة</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-bold text-white">تواصل معنا</p>
+        <ul class="mt-2 space-y-1 text-sm">
+          <!-- ✏️ عدّل بيانات التواصل -->
+          <li><a class="hover:text-sun" href="mailto:info@YOUR-DOMAIN.com">info@YOUR-DOMAIN.com</a></li>
+          <li><a class="hover:text-sun" href="#" rel="noopener">فيسبوك</a></li>
+          <li><a class="hover:text-sun" href="#" rel="noopener">إنستغرام</a></li>
+          <li><a class="hover:text-sun" href="#" rel="noopener">إكس (تويتر)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 py-4 text-center text-sm">
+      © <span id="year"></span> <span id="site-name">رحلاتك</span>. جميع الحقوق محفوظة.
+    </div>
+  </footer>
+
+  <script>
+    /* ============ الإعدادات العامة (عدّلها بسهولة) ============ */
+    const SITE_CONFIG = {
+      name: "رحلاتك",
+      domain: "https://YOUR-DOMAIN.com",   // ✏️ الدومين الخاص بك
+      // ✏️ ضع هنا رمز الشريك (marker) إن احتجته لروابط مخصّصة
+      travelpayoutsMarker: ""
+    };
+
+    /* ============ بيانات الوجهات ============ */
+    // code = رمز المطار IATA | from/to = ألوان التدرج (بدلاً من الصور لسرعة التحميل)
+    // لاستخدام صور حقيقية: أضف الحقل image: "images/dubai.jpg" (انظر دالة renderDestinations)
+    const DESTINATIONS = [
+      { city: "دبي",      country: "الإمارات",  code: "DXB", from: "#0b3954", to: "#1b8a9a" },
+      { city: "القاهرة",  country: "مصر",       code: "CAI", from: "#7a4a1d", to: "#e0a458" },
+      { city: "إسطنبول",  country: "تركيا",     code: "IST", from: "#3b2a63", to: "#c76b98" },
+      { city: "الرياض",   country: "السعودية",  code: "RUH", from: "#1f5b3a", to: "#8fbf7a" }
+    ];
+
+    /* ============ عرض بطاقات الوجهات ============ */
+    function renderDestinations() {
+      const grid = document.getElementById("destinations-grid");
+      grid.innerHTML = DESTINATIONS.map(d => {
+        const bg = d.image
+          ? `background-image:url('${d.image}');background-size:cover;background-position:center`
+          : `background-image:linear-gradient(135deg,${d.from},${d.to})`;
+        return `
+          <article class="group relative flex h-64 flex-col justify-end overflow-hidden rounded-2xl p-5 text-white shadow-md" style="${bg}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div class="relative">
+              <h3 class="text-2xl font-black">${d.city}</h3>
+              <p class="text-sm text-white/80">${d.country} · ${d.code}</p>
+              <button type="button" data-code="${d.code}" data-city="${d.city}"
+                class="search-dest mt-3 w-full rounded-xl bg-sun px-4 py-2 font-bold text-ink hover:bg-sun-dark">
+                ابحث عن رحلات
+              </button>
+            </div>
+          </article>`;
+      }).join("");
+
+      // ربط الأزرار
+      grid.querySelectorAll(".search-dest").forEach(btn =>
+        btn.addEventListener("click", () => onDestinationSelect(btn.dataset.code, btn.dataset.city)));
+    }
+
+    /* ============ دالة اختيار الوجهة (مكان التطوير المستقبلي) ============ */
+    // حالياً: تمرير الصفحة إلى الودجت. لاحقاً يمكن تمرير الوجهة إلى الودجت
+    // أو بناء رابط Aviasales مخصص باستخدام SITE_CONFIG.travelpayoutsMarker
+    function onDestinationSelect(code, city) {
+      document.getElementById("search").scrollIntoView({ behavior: "smooth" });
+      console.info(`وجهة مختارة: ${city} (${code})`);
+    }
+
+    /* ============ قائمة الجوال ============ */
+    function initMobileMenu() {
+      const btn = document.getElementById("menu-btn");
+      const menu = document.getElementById("mobile-menu");
+      btn.addEventListener("click", () => {
+        const open = menu.classList.toggle("hidden") === false;
+        btn.setAttribute("aria-expanded", open);
+      });
+      menu.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+        menu.classList.add("hidden");
+        btn.setAttribute("aria-expanded", "false");
+      }));
+    }
+
+    /* ============ إخفاء الـ placeholder بعد تحميل الودجت ============ */
+    function initWidgetObserver() {
+      const box = document.getElementById("search-widget");
+      const ph = document.getElementById("widget-placeholder");
+      new MutationObserver(() => {
+        // إذا أُضيف أي عنصر آخر غير الـ placeholder نخفيه
+        if (box.children.length > 1 || (box.children.length === 1 && box.children[0] !== ph)) ph.remove();
+      }).observe(box, { childList: true });
+    }
+
+    /* ============ التشغيل ============ */
+    document.addEventListener("DOMContentLoaded", () => {
+      document.title = document.title; // مكان لتخصيص العنوان ديناميكياً لاحقاً
+      document.getElementById("year").textContent = new Date().getFullYear();
+      document.getElementById("site-name").textContent = SITE_CONFIG.name;
+      renderDestinations();
+      initMobileMenu();
+      initWidgetObserver();
+    });
+  </script>
+</body>
+</html>

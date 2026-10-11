@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>سفراء الطيران | أفضل عروض الطيران العالمية</title>
+  <meta name="description" content="أفضل عروض الطيران والرحلات العالمية من شركات موثوقة مع أسعار تنافسية وعروض ترويجية مميزة.">
+  <meta name="theme-color" content="#072b43">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+      --color-ink: #072b43;
+      --color-ink-soft: #0d3f61;
+      --color-sky: #eef6ff;
+      --color-sun: #ffb400;
+      --color-sun-soft: #ffd45b;
+      --color-ice: #dfeeff;
+      --color-mint: #0ea5a4;
+    }
+    html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+    body { font-family: var(--font-sans); }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    :focus-visible { outline: 3px solid var(--color-sun); outline-offset: 2px; }
+  </style>
+</head>
+<body class="bg-sky text-ink antialiased">
+  <header class="sticky top-0 z-50 bg-ink/95 text-white shadow-lg shadow-ink/10 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <a href="#home" class="flex items-center gap-2 text-2xl font-black">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-sun text-lg text-ink">✈️</span>
+        <span>سفراء الطيران</span>
+      </a>
+      <nav class="hidden items-center gap-7 text-sm font-bold md:flex" aria-label="القائمة الرئيسية">
+        <a href="#home" class="transition hover:text-sun">الرئيسية</a>
+        <a href="#offers" class="transition hover:text-sun">العروض</a>
+        <a href="#destinations" class="transition hover:text-sun">الوجهات</a>
+        <a href="#partners" class="transition hover:text-sun">الشركات</a>
+      </nav>
+      <button id="menu-btn" class="rounded-lg p-2 hover:bg-white/10 md:hidden" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mobile-menu">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <nav id="mobile-menu" class="hidden border-t border-white/10 md:hidden" aria-label="القائمة الجوالية">
+      <ul class="space-y-2 px-4 py-3 text-sm font-bold">
+        <li><a class="block py-2" href="#home">الرئيسية</a></li>
+        <li><a class="block py-2" href="#offers">العروض</a></li>
+        <li><a class="block py-2" href="#destinations">الوجهات</a></li>
+        <li><a class="block py-2" href="#partners">الشركات</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="relative overflow-hidden bg-ink text-white">
+      <div class="absolute inset-0 opacity-30" style="background-image:linear-gradient(135deg, rgba(255,180,0,0.16), transparent 40%), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1400&q=80'); background-size:cover; background-position:center;"></div>
+      <div class="relative mx-auto max-w-6xl px-4 pb-24 pt-16 sm:pt-20">
+        <div class="mx-auto max-w-3xl text-center">
+          <span class="inline-flex rounded-full border border-sun/60 bg-sun/10 px-4 py-2 text-sm font-bold text-sun">أفضل الصفقات الجوية</span>
+          <h1 class="mt-6 text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
+            احصل على أفضل أسعار الرحلات<br class="hidden sm:block">من شركات الطيران الموثوقة
+          </h1>
+          <p class="mx-auto mt-5 max-w-2xl text-base text-white/80 sm:text-lg">
+            نسهل عليك مقارنة العروض، اكتشاف الوجهات الأكثر ربحاً، وفتح فرص عمولة من أفضل شركاء الطيران في العالم.
+          </p>
+          <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a href="#offers" class="rounded-full bg-sun px-7 py-3 font-extrabold text-ink shadow-lg shadow-sun/30 transition hover:bg-sun-soft">استكشف العروض</a>
+            <a href="pages/details.html" class="rounded-full border border-white/25 bg-white/5 px-7 py-3 font-extrabold text-white transition hover:border-sun hover:text-sun">شاهد التفاصيل</a>
+          </div>
+        </div>
+      </div>
+      <div class="absolute -bottom-1 left-0 w-full text-sky">
+        <svg viewBox="0 0 1440 80" class="h-20 w-full" preserveAspectRatio="none" aria-hidden="true">
+          <path fill="currentColor" d="M0,64 L1440,64 L1440,10 C1230,80 920,-15 720,38 C520,90 300,80 0,48 Z"></path>
+        </svg>
+      </div>
+    </section>
+
+    <section id="offers" class="relative z-10 mx-auto -mt-10 max-w-6xl px-4">
+      <div class="rounded-[28px] bg-white p-4 shadow-2xl shadow-ink/10 sm:p-6">
+        <div class="mb-5 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p class="text-sm font-bold text-ink-soft/75">أبرز العروض الحالية</p>
+            <h2 class="text-2xl font-black">عروض طيران مميزة بأسعار تنافسية</h2>
+          </div>
+          <a href="pages/booking.html" class="rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-white transition hover:bg-ink-soft">احصل على عرض خاص</a>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-3">
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold text-slate-500">طيران الإمارات</p>
+                <h3 class="mt-2 text-xl font-black">دبي</h3>
+              </div>
+              <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">-32%</span>
+            </div>
+            <div class="mt-4 h-28 rounded-2xl bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80');"></div>
+            <div class="mt-4 flex items-center justify-between">
+              <div>
+                <p class="text-xs text-slate-500">من الرياض</p>
+                <p class="text-2xl font-black text-ink">699 ر.س</p>
+              </div>
+              <a href="https://www.emirates.com/" target="_blank" rel="noreferrer" class="rounded-full bg-sun px-4 py-2 text-sm font-black text-ink">احصل على العرض</a>
+            </div>
+          </article>
+
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold text-slate-500">فلاي ناس</p>
+                <h3 class="mt-2 text-xl font-black">القاهرة</h3>
+              </div>
+              <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">-28%</span>
+            </div>
+            <div class="mt-4 h-28 rounded-2xl bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1505761671935-60eb3a6f0c4d?auto=format&fit=crop&w=800&q=80');"></div>
+            <div class="mt-4 flex items-center justify-between">
+              <div>
+                <p class="text-xs text-slate-500">من جدة</p>
+                <p class="text-2xl font-black text-ink">540 ر.س</p>
+              </div>
+              <a href="https://www.flynas.com/" target="_blank" rel="noreferrer" class="rounded-full bg-sun px-4 py-2 text-sm font-black text-ink">احصل على العرض</a>
+            </div>
+          </article>
+
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-bold text-slate-500">الاتحاد</p>
+                <h3 class="mt-2 text-xl font-black">لندن</h3>
+              </div>
+              <span class="rounded-full bg-cyan-100 px-3 py-1 text-xs font-black text-cyan-700">-26%</span>
+            </div>
+            <div class="mt-4 h-28 rounded-2xl bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80');"></div>
+            <div class="mt-4 flex items-center justify-between">
+              <div>
+                <p class="text-xs text-slate-500">من جدة</p>
+                <p class="text-2xl font-black text-ink">760 ر.س</p>
+              </div>
+              <a href="https://www.etihad.com/" target="_blank" rel="noreferrer" class="rounded-full bg-sun px-4 py-2 text-sm font-black text-ink">احصل على العرض</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="destinations" class="mx-auto max-w-6xl px-4 py-20">
+      <div class="mb-8 text-center">
+        <p class="text-sm font-bold text-ink-soft/75">أفضل الوجهات</p>
+        <h2 class="text-3xl font-black">وجهات شعبية يبحث عنها المسافرون</h2>
+      </div>
+      <div class="grid gap-5 md:grid-cols-4">
+        <div class="rounded-[26px] bg-cover bg-center p-6 text-white shadow-lg" style="background-image:linear-gradient(180deg, rgba(7,43,67,0.25), rgba(7,43,67,0.75)), url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80'); min-height:260px;">
+          <p class="text-sm font-bold text-sun">من الرياض</p>
+          <h3 class="mt-16 text-3xl font-black">دبي</h3>
+        </div>
+        <div class="rounded-[26px] bg-cover bg-center p-6 text-white shadow-lg" style="background-image:linear-gradient(180deg, rgba(7,43,67,0.25), rgba(7,43,67,0.75)), url('https://images.unsplash.com/photo-1527838832700-5059252407fa?auto=format&fit=crop&w=900&q=80'); min-height:260px;">
+          <p class="text-sm font-bold text-sun">من جدة</p>
+          <h3 class="mt-16 text-3xl font-black">إسطنبول</h3>
+        </div>
+        <div class="rounded-[26px] bg-cover bg-center p-6 text-white shadow-lg" style="background-image:linear-gradient(180deg, rgba(7,43,67,0.25), rgba(7,43,67,0.75)), url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=80'); min-height:260px;">
+          <p class="text-sm font-bold text-sun">من الرياض</p>
+          <h3 class="mt-16 text-3xl font-black">باريس</h3>
+        </div>
+        <div class="rounded-[26px] bg-cover bg-center p-6 text-white shadow-lg" style="background-image:linear-gradient(180deg, rgba(7,43,67,0.25), rgba(7,43,67,0.75)), url('https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=900&q=80'); min-height:260px;">
+          <p class="text-sm font-bold text-sun">من جدة</p>
+          <h3 class="mt-16 text-3xl font-black">القاهرة</h3>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-6xl px-4 pb-20">
+      <div class="grid gap-6 md:grid-cols-3">
+        <article class="rounded-[28px] bg-white p-7 shadow-lg shadow-ink/5">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-ice text-2xl">⚡</div>
+          <h3 class="text-xl font-black">تحديثات فورية</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-600">نقوم بتحديث العروض بشكل يومي حتى تحصل على أحدث الصفقات والأسعار المميزة.</p>
+        </article>
+        <article class="rounded-[28px] bg-white p-7 shadow-lg shadow-ink/5">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-ice text-2xl">🔒</div>
+          <h3 class="text-xl font-black">شركاء موثوقون</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-600">نعمل مع شركات طيران ومعروفة وقنوات حجز موثوقة لضمان تجربة شراء آمنة وفعالة.</p>
+        </article>
+        <article class="rounded-[28px] bg-white p-7 shadow-lg shadow-ink/5">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-ice text-2xl">💰</div>
+          <h3 class="text-xl font-black">عائدات عمولة</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-600">نستهدف إعلانات وعروض تجذب الزوار من خلال رابط عمولة، مع أعلى معدلات تحويل وعائد بحث.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="partners" class="bg-ink py-20 text-white">
+      <div class="mx-auto max-w-6xl px-4">
+        <div class="text-center">
+          <p class="text-sm font-bold text-sun">شركاؤنا</p>
+          <h2 class="mt-2 text-3xl font-black">شركات طيران وعروض موثوقة</h2>
+        </div>
+        <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 text-center font-black text-lg">Emirates</div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 text-center font-black text-lg">flynas</div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 text-center font-black text-lg">Etihad</div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 text-center font-black text-lg">Qatar</div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-5 text-center font-black text-lg">Turkish</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-5xl px-4 py-20">
+      <div class="rounded-[32px] bg-gradient-to-r from-sun to-sun-soft p-8 text-center text-ink shadow-xl shadow-sun/30">
+        <p class="text-sm font-bold">ابدأ اليوم</p>
+        <h2 class="mt-2 text-3xl font-black">ابحث عن أفضل عرض للطيران تناسب رحلتك</h2>
+        <div class="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <a href="pages/booking.html" class="rounded-full bg-ink px-7 py-3 font-extrabold text-white">احصل على عرض خاص</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-slate-950 py-8 text-white">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 md:flex-row">
+      <p class="text-sm text-slate-300">© 2026 سفراء الطيران • جميع الحقوق محفوظة</p>
+      <div class="flex items-center gap-4 text-sm text-slate-300">
+        <a href="#offers" class="hover:text-sun">العروض</a>
+        <a href="#destinations" class="hover:text-sun">الوجهات</a>
+        <a href="pages/booking.html" class="hover:text-sun">تواصل معنا</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+    if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+      if (isMobile) {
+        window.location.href = 'pages/mobile.html';
+      } else {
+        window.location.href = 'pages/desktop.html';
+      }
+    }
+
+    if (menuBtn && mobileMenu) {
+      menuBtn.addEventListener('click', () => {
+        const isOpen = !mobileMenu.classList.contains('hidden');
+        mobileMenu.classList.toggle('hidden');
+        menuBtn.setAttribute('aria-expanded', String(!isOpen));
+      });
+    }
+  </script>
+</body>
+</html>
