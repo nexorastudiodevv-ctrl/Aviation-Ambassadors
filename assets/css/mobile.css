@@ -22,7 +22,7 @@ body {
   background: linear-gradient(180deg, #dfefff 0%, #edf6ff 100%);
   display: flex;
   justify-content: center;
-  padding: 30px 16px;
+  padding: 0;
   font-family: "Cairo", sans-serif;
   color: var(--ink);
 }
@@ -38,12 +38,11 @@ input {
 }
 
 .phone-shell {
-  width: min(100%, 420px);
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   background: #f7fbff;
-  border-radius: 28px;
-  box-shadow: var(--shadow);
   overflow: hidden;
-  border: 1px solid rgba(17, 52, 73, 0.07);
 }
 
 .mobile-header {
@@ -170,6 +169,7 @@ input {
 }
 
 .mobile-search-btn {
+  display: block;
   width: 100%;
   background: var(--gold);
   color: var(--ink);
@@ -178,6 +178,7 @@ input {
   padding: 14px 18px;
   margin-top: 18px;
   font-weight: 800;
+  text-align: center;
 }
 
 .offers-block {
@@ -229,10 +230,96 @@ input {
   font-weight: 800;
 }
 
+.mini-offer a {
+  color: #956700;
+  font-weight: 900;
+  padding: 10px 0 10px 10px;
+}
+
+.destination-list,
+.partner-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.destination-list a,
+.partner-list span {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+  font-weight: 800;
+}
+
+.destination-list a span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.partner-list span {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.mobile-cta {
+  margin-top: 22px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--navy);
+  color: #fff;
+}
+
+.mobile-cta h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.mobile-cta p {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.8;
+}
+
 .mobile-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 22px;
   padding: 16px 18px 24px;
   text-align: center;
   background: #fff;
   border-top: 1px solid var(--line);
   font-weight: 700;
+}
+
+.mobile-footer small {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+@media (min-width: 480px) {
+  body {
+    padding: 24px 16px;
+  }
+
+  .phone-shell {
+    width: min(100%, 420px);
+    min-height: 0;
+    border: 1px solid rgba(17, 52, 73, 0.07);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+  }
+}
+
+@media (max-width: 360px) {
+  .destination-list,
+  .partner-list {
+    grid-template-columns: 1fr;
+  }
 }

@@ -17,14 +17,15 @@
           <div class="brand-icon">✈️</div>
           <span>سفراء الطيران</span>
         </div>
-        <button class="menu-btn" id="mobileMenuBtn" aria-label="فتح القائمة">☰</button>
+        <button class="menu-btn" id="mobileMenuBtn" aria-label="فتح القائمة" aria-expanded="false" aria-controls="mobileNav">☰</button>
       </header>
 
-      <nav class="mobile-nav" id="mobileNav">
+      <nav class="mobile-nav" id="mobileNav" aria-label="القائمة الرئيسية">
         <a href="#home">الرئيسية</a>
         <a href="#offers">العروض</a>
         <a href="#destinations">الوجهات</a>
-        <a href="#about">المزيد</a>
+        <a href="#partners">شركات الطيران</a>
+        <a href="#about">تواصل معنا</a>
       </nav>
 
       <main class="mobile-main">
@@ -34,7 +35,7 @@
           <p>اكتشف الطيران الأنسب لك من شركات موثوقة بأسعار مغرية.</p>
         </section>
 
-        <section class="search-card" id="offers">
+        <section class="search-card" aria-label="عرض رحلة الرياض إلى دبي">
           <div class="trip-row">
             <span>من</span>
             <strong>الرياض</strong>
@@ -56,13 +57,13 @@
             </div>
           </div>
 
-          <a class="mobile-search-btn" href="details.html">شاهد العرض</a>
+          <a class="mobile-search-btn" href="details.html">تفاصيل العرض</a>
         </section>
 
-        <section class="offers-block" id="destinations">
+        <section class="offers-block" id="offers">
           <div class="section-head">
             <h2>أحدث العروض</h2>
-            <a href="#">عرض الكل</a>
+            <a href="../index.html#offers">كل العروض</a>
           </div>
 
           <article class="mini-offer">
@@ -70,7 +71,7 @@
               <strong>دبي</strong>
               <small>طيران الإمارات</small>
             </div>
-            <span>699 ر.س</span>
+            <a href="https://www.emirates.com/" target="_blank" rel="noopener noreferrer" aria-label="شاهد عرض طيران الإمارات إلى دبي">699 ر.س</a>
           </article>
 
           <article class="mini-offer">
@@ -78,7 +79,7 @@
               <strong>القاهرة</strong>
               <small>فلاي ناس</small>
             </div>
-            <span>540 ر.س</span>
+            <a href="https://www.flynas.com/" target="_blank" rel="noopener noreferrer" aria-label="شاهد عرض فلاي ناس إلى القاهرة">540 ر.س</a>
           </article>
 
           <article class="mini-offer">
@@ -86,14 +87,46 @@
               <strong>لندن</strong>
               <small>الاتحاد</small>
             </div>
-            <span>760 ر.س</span>
+            <a href="https://www.etihad.com/" target="_blank" rel="noopener noreferrer" aria-label="شاهد عرض الاتحاد إلى لندن">760 ر.س</a>
           </article>
+        </section>
+
+        <section class="offers-block" id="destinations">
+          <div class="section-head">
+            <h2>وجهات شائعة</h2>
+          </div>
+          <div class="destination-list">
+            <a href="details.html">دبي <span>من الرياض</span></a>
+            <a href="../index.html#destinations">إسطنبول <span>من جدة</span></a>
+            <a href="../index.html#destinations">باريس <span>من الرياض</span></a>
+            <a href="../index.html#destinations">القاهرة <span>من جدة</span></a>
+          </div>
+        </section>
+
+        <section class="offers-block" id="partners">
+          <div class="section-head">
+            <h2>شركات الطيران</h2>
+          </div>
+          <div class="partner-list">
+            <span>Emirates</span>
+            <span>flynas</span>
+            <span>Etihad</span>
+            <span>Qatar Airways</span>
+            <span>Turkish Airlines</span>
+          </div>
+        </section>
+
+        <section class="mobile-cta">
+          <h2>تحتاج مساعدة في اختيار عرضك؟</h2>
+          <p>أرسل طلب استفسار، وأكمل الحجز والدفع لدى شركة الطيران أو شريك الحجز.</p>
+          <a class="mobile-search-btn" href="booking.html">اطلب معلومات عن عرض</a>
         </section>
       </main>
 
       <footer class="mobile-footer" id="about">
-        <a href="../index.html">الرئيسية</a>
-        <a href="booking.html">تواصل</a>
+        <a href="../index.html">الصفحة الرئيسية</a>
+        <a href="booking.html">تواصل معنا</a>
+        <small>نساعدك على اكتشاف العروض؛ الحجز والدفع لدى الشريك.</small>
       </footer>
     </div>
 
