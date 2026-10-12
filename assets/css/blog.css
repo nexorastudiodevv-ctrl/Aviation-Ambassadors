@@ -173,6 +173,18 @@ h1 {
   background: #fff;
 }
 
+.article-hero {
+  margin: 0 0 24px;
+}
+
+.article-hero img {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
 .article h1 {
   margin-block: 10px 14px;
 }
