@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sofara.nexorastudio-eg.com/sitemap.xml
+Sitemap: https://nexorastudio-eg.com/sitemap.xml
