@@ -31,12 +31,11 @@ jobs:
       - name: Check publishing credentials
         id: credentials
         env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           PAGES_PUBLISH_TOKEN: ${{ secrets.PAGES_PUBLISH_TOKEN }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ] || [ -z "$PAGES_PUBLISH_TOKEN" ]; then
+          if [ -z "$PAGES_PUBLISH_TOKEN" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Add FIREBASE_SERVICE_ACCOUNT_JSON and PAGES_PUBLISH_TOKEN repository secrets to enable publishing."
+            echo "::notice::Add PAGES_PUBLISH_TOKEN repository secret to enable publishing."
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
@@ -47,8 +46,6 @@ jobs:
 
       - name: Generate published article pages
         if: steps.credentials.outputs.configured == 'true'
-        env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: npm run build:articles
 
       - name: Commit generated site

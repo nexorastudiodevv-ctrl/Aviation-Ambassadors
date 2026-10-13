@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  loadFirebasePublicConfig,
   renderPage,
   updateBlog,
   updateSitemap,
@@ -40,6 +41,56 @@ test("renders a static article with canonical metadata and sanitized Markdown", 
   for (const [, json] of jsonLd) assert.doesNotThrow(() => JSON.parse(json));
 });
 
+test("renders a disclosed affiliate CTA at the selected position", () => {
+  const article = validateArticle(validArticle.slug, {
+    ...validArticle,
+    content: "## البداية\n\nفقرة البداية.\n\n## التفاصيل\n\nفقرة التفاصيل.",
+    affiliateUrl: "https://localrent.tpo.mx/1hRaQWdk",
+    affiliateDescription: "قارن خيارات تأجير السيارات في وجهتك.",
+    affiliateLabel: "استكشف السيارات المتاحة",
+    affiliatePosition: "middle"
+  });
+  const html = renderPage(article);
+  const paragraphEnd = html.indexOf("<p>فقرة البداية.</p>");
+  const affiliateCtaStart = html.indexOf('<aside class="affiliate-cta"');
+  const nextHeading = html.indexOf("<h2>التفاصيل</h2>");
+
+  assert.ok(paragraphEnd < affiliateCtaStart);
+  assert.ok(affiliateCtaStart < nextHeading);
+  assert.match(html, /rel="sponsored nofollow noopener noreferrer"/);
+  assert.match(html, /إفصاح: قد نحصل على عمولة/);
+  assert.match(html, /https:\/\/localrent\.tpo\.mx\/1hRaQWdk/);
+});
+
+test("validates affiliate URLs, button labels, and placements", () => {
+  assert.throws(
+    () => validateArticle(validArticle.slug, {
+      ...validArticle,
+      affiliateUrl: "http://example.com",
+      affiliateLabel: "زر العرض",
+      affiliatePosition: "bottom"
+    }),
+    /affiliateUrl must use HTTPS/
+  );
+  assert.throws(
+    () => validateArticle(validArticle.slug, {
+      ...validArticle,
+      affiliateUrl: "https://example.com",
+      affiliatePosition: "bottom"
+    }),
+    /affiliateLabel/
+  );
+  assert.throws(
+    () => validateArticle(validArticle.slug, {
+      ...validArticle,
+      affiliateUrl: "https://example.com",
+      affiliateLabel: "زر العرض",
+      affiliatePosition: "unsupported"
+    }),
+    /affiliatePosition/
+  );
+});
+
 test("adds Firestore cards and structured data without removing existing guides", async () => {
   const blogPath = new URL("../pages/blog.html", import.meta.url);
   const blog = await readFile(blogPath, "utf8");
@@ -71,4 +122,10 @@ test("updates sitemap entries and removes unpublished generated URLs", async () 
   assert.match(updated, /<lastmod>2026-10-13<\/lastmod>/);
   assert.match(updated, /<loc>https:\/\/avam\.nexorastudio-eg\.com\/pages\/blog\.html<\/loc>\s*<lastmod>2026-10-13<\/lastmod>/);
   assert.doesNotMatch(updated, /pages\/articles\/old-post\.html/);
+});
+
+test("loads the public Firebase configuration without depending on the dashboard repository", () => {
+  const config = loadFirebasePublicConfig();
+  assert.ok(config.apiKey);
+  assert.equal(config.projectId, "avam-admin-2026-eg");
 });

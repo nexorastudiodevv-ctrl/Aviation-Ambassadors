@@ -17,11 +17,10 @@
 يُنشئ سير العمل صفحات HTML ثابتة كاملة لمحركات البحث من مستندات مجموعة `articles` التي حالتها `published`. يعمل تلقائيًا كل 15 دقيقة، ويمكن تشغيله فورًا من GitHub Actions → **Publish Firebase articles** → **Run workflow**. عند وجود تغييرات، تُرفع الصفحات المولدة وخريطة الموقع إلى `main` ويبدأ نشر GitHub Pages المعتاد.
 
 ### إعداد الوصول الآمن
-1. أنشئ حساب خدمة مخصصًا للقراءة من Firestore، وامنحه أقل صلاحية لازمة لقراءة قاعدة البيانات (مثل **Cloud Datastore Viewer**). لا تستخدم مفتاح مالك المشروع.
-2. أضف محتوى ملف JSON لحساب الخدمة في مستودع GitHub: Settings → Secrets and variables → Actions → New repository secret، والاسم `FIREBASE_SERVICE_ACCOUNT_JSON`.
-3. أنشئ Fine-grained personal access token للمستودع `nexorastudiodevv-ctrl/Aviation-Ambassadors` بصلاحية **Contents: Read and write**، واحفظه كسر `PAGES_PUBLISH_TOKEN`. يلزم هذا الرمز حتى يطلق دفع الملفات المولدة سير نشر GitHub Pages.
+1. انشر قواعد Firestore مرة واحدة باستخدام Firebase CLI بعد تسجيل الدخول واختيار مشروع Firebase الصحيح: `firebase deploy --only firestore:rules --project avam-admin-2026-eg`. هذه الخطوة مطلوبة للسماح بقراءة المقالات المنشورة للعامة وبقراءة كل المقالات للمشرف.
+2. لا يحتاج بناء المقالات إلى حساب خدمة أو مفتاح خاص؛ يستخدم إعداد Firebase العام في `scripts/firebase-public-config.mjs` ويطلب مستندات `published` فقط، بما يتوافق مع القواعد المنشورة. أبقِ الإعداد متطابقًا مع `firebase-config.js` في مستودع لوحة التحكم المنفصل.
+3. أنشئ Fine-grained personal access token للمستودع `nexorastudiodevv-ctrl/Aviation-Ambassadors` بصلاحية **Contents: Read and write**، واحفظه كسر `PAGES_PUBLISH_TOKEN` في GitHub Actions حتى يستطيع سير العمل دفع الصفحات المولدة إلى `main`.
 4. تأكد من السماح لحساب GitHub Actions بكتابة تغييرات إلى الفرع `main` (Settings → Actions → General → Workflow permissions). إذا كان الفرع محميًا، اسمح لهذا المسار بالنشر أو عدّل سياسة الحماية بما يتناسب مع فريقك.
-5. يمكن نشر قواعد Firestore الموجودة في `firestore.rules` باستخدام Firebase CLI بعد اختيار مشروع Firebase الصحيح: `firebase deploy --only firestore:rules --project <PROJECT_ID>`. تسمح القواعد بقراءة المقالات المنشورة فقط، وتحصر الكتابة على حسابات المستخدمين التي تحمل custom claim باسم `admin` وقيمته `true`؛ عمليات Firebase Console تستخدم صلاحيات مالك المشروع وتتجاوز قواعد العميل.
 
 ### شكل المستند
 أنشئ مستندًا في مجموعة `articles`، واجعل معرّف المستند هو الرابط اللاتيني المختصر `slug` نفسه، واستخدم الحقول:
@@ -39,6 +38,10 @@
 | `updatedAt` | Timestamp | لا | آخر تعديل؛ يُستخدم في `dateModified` و`lastmod`، وإلا يُستخدم تاريخ النشر |
 | `imageUrl` | نص | لا | رابط HTTPS للصورة الرئيسية |
 | `imageAlt` | نص | عند وجود صورة | وصف بديل للصورة |
+| `affiliateUrl` | نص | لا | رابط شريك HTTPS؛ عند وجوده يظهر صندوق ترويجي مع إفصاح العمولة |
+| `affiliateLabel` | نص | عند وجود رابط | نص زر الرابط الترويجي |
+| `affiliateDescription` | نص | لا | وصف قصير للعرض، حتى 180 حرفًا |
+| `affiliatePosition` | نص | عند وجود رابط | الموضع: `top` أو `middle` أو `bottom` |
 
 مثال لقيم مستند Firestore بمعرّف `riyadh-family-trip-checklist`:
 
@@ -55,4 +58,4 @@
 }
 ```
 
-لا تضع بيانات اعتماد Firebase أو أسرارًا داخل صفحات الويب أو المستودع. بعد إعداد السر، اختبر النشر بمقال تجريبي، ثم راجع صفحة `/pages/articles/<slug>.html` وخريطة الموقع في الموقع المنشور. ملفات HTML داخل `pages/articles/` مولدة تلقائيًا؛ لا تعدّلها يدويًا.
+لا تضع أسرار GitHub أو مفاتيح خاصة داخل صفحات الويب أو المستودع. بعد إعداد سر GitHub، اختبر النشر بمقال تجريبي، ثم راجع صفحة `/pages/articles/<slug>.html` وخريطة الموقع في الموقع المنشور. ملفات HTML داخل `pages/articles/` مولدة تلقائيًا؛ لا تعدّلها يدويًا.

@@ -1,10 +1,11 @@
-import { cert, initializeApp } from "firebase-admin/app";
-import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { initializeApp } from "firebase/app";
+import { collection, getDocs, getFirestore, query, Timestamp, where } from "firebase/firestore";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import firebasePublicConfig from "./firebase-public-config.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const siteUrl = "https://avam.nexorastudio-eg.com";
@@ -14,6 +15,13 @@ const articlesPath = path.join(root, "pages", "articles");
 const sitemapPath = path.join(root, "sitemap.xml");
 const markerPattern = /<!-- FIREBASE_ARTICLES_START -->[\s\S]*?<!-- FIREBASE_ARTICLES_END -->/;
 const requiredFields = ["title", "description", "excerpt", "content", "category"];
+
+export function loadFirebasePublicConfig() {
+  if (!firebasePublicConfig.apiKey || !firebasePublicConfig.projectId) {
+    throw new Error("Firebase apiKey and projectId are required in scripts/firebase-public-config.mjs.");
+  }
+  return firebasePublicConfig;
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -59,6 +67,20 @@ function safeImageUrl(value, slug) {
   return url.href;
 }
 
+function safeAffiliateUrl(value, slug) {
+  if (value === undefined || value === null || value === "") return "";
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`Article "${slug}" has an invalid affiliateUrl.`);
+  }
+  if (url.protocol !== "https:") {
+    throw new Error(`Article "${slug}" affiliateUrl must use HTTPS.`);
+  }
+  return url.href;
+}
+
 export function validateArticle(id, data) {
   const normalizedData = { ...data };
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
@@ -90,7 +112,37 @@ export function validateArticle(id, data) {
     throw new Error(`Article "${id}" must provide imageAlt when imageUrl is set.`);
   }
 
-  return { ...normalizedData, id, publishedAt, modifiedAt, imageUrl, imageAlt };
+  const affiliateUrl = safeAffiliateUrl(data.affiliateUrl, id);
+  const affiliateLabel = typeof data.affiliateLabel === "string" ? data.affiliateLabel.trim() : "";
+  const affiliateDescription = typeof data.affiliateDescription === "string"
+    ? data.affiliateDescription.trim()
+    : "";
+  const affiliatePosition = data.affiliatePosition || (affiliateUrl ? "bottom" : "none");
+  if (affiliateUrl && !affiliateLabel) {
+    throw new Error(`Article "${id}" must provide affiliateLabel when affiliateUrl is set.`);
+  }
+  if (affiliateLabel.length > 70 || affiliateDescription.length > 180) {
+    throw new Error(`Article "${id}" exceeds the supported affiliate label or description length.`);
+  }
+  if (affiliateUrl && !["top", "middle", "bottom"].includes(affiliatePosition)) {
+    throw new Error(`Article "${id}" has an invalid affiliatePosition.`);
+  }
+  if (!affiliateUrl && (affiliateLabel || affiliateDescription || affiliatePosition !== "none")) {
+    throw new Error(`Article "${id}" has affiliate details but no affiliateUrl.`);
+  }
+
+  return {
+    ...normalizedData,
+    id,
+    publishedAt,
+    modifiedAt,
+    imageUrl,
+    imageAlt,
+    affiliateUrl,
+    affiliateLabel,
+    affiliateDescription,
+    affiliatePosition
+  };
 }
 
 function renderMarkdown(markdown) {
@@ -108,6 +160,30 @@ function renderMarkdown(markdown) {
 
 function articleUrl(article) {
   return `${siteUrl}/pages/articles/${article.id}.html`;
+}
+
+function renderAffiliateCta(article) {
+  if (!article.affiliateUrl) return "";
+
+  return `<aside class="affiliate-cta" aria-label="رابط ترويجي">
+    ${article.affiliateDescription ? `<p>${escapeHtml(article.affiliateDescription)}</p>` : ""}
+    <a href="${escapeHtml(article.affiliateUrl)}" target="_blank" rel="sponsored nofollow noopener noreferrer">${escapeHtml(article.affiliateLabel)}</a>
+    <small>إفصاح: قد نحصل على عمولة عند إتمام حجز عبر هذا الرابط، وفق شروط الشركة.</small>
+  </aside>`;
+}
+
+function renderArticleContent(article) {
+  const content = renderMarkdown(article.content);
+  const affiliateCta = renderAffiliateCta(article);
+  if (!affiliateCta) return content;
+  if (article.affiliatePosition === "top") return `${affiliateCta}\n${content}`;
+  if (article.affiliatePosition === "middle") {
+    const firstParagraphEnd = content.indexOf("</p>");
+    if (firstParagraphEnd === -1) return `${content}\n${affiliateCta}`;
+    const insertionPoint = firstParagraphEnd + "</p>".length;
+    return `${content.slice(0, insertionPoint)}\n${affiliateCta}${content.slice(insertionPoint)}`;
+  }
+  return `${content}\n${affiliateCta}`;
 }
 
 export function renderPage(article) {
@@ -187,7 +263,7 @@ export function renderPage(article) {
       ${imageMarkup}
       <span class="tag">${category} · نُشر في ${published}</span>
       <h1>${title}</h1>
-      ${renderMarkdown(article.content)}
+      ${renderArticleContent(article)}
       <div class="article-footer"><a href="/pages/blog.html">كل أدلة السفر</a><a href="/">العودة إلى الرئيسية</a></div>
     </article>
   </main>
@@ -273,22 +349,13 @@ export function updateSitemap(sitemap, articles) {
 }
 
 async function readPublishedArticles() {
-  const credentialJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!credentialJson) {
-    throw new Error("Set FIREBASE_SERVICE_ACCOUNT_JSON in GitHub Actions secrets.");
-  }
-
-  let credential;
-  try {
-    credential = JSON.parse(credentialJson);
-  } catch (error) {
-    throw new Error(`FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON: ${error.message}`);
-  }
-
-  const app = initializeApp({ credential: cert(credential) });
-  const snapshot = await getFirestore(app).collection(collectionName).get();
+  const app = initializeApp(await loadFirebasePublicConfig());
+  const articlesQuery = query(
+    collection(getFirestore(app), collectionName),
+    where("status", "==", "published")
+  );
+  const snapshot = await getDocs(articlesQuery);
   const articles = snapshot.docs
-    .filter((document) => document.data().status === "published")
     .map((document) => validateArticle(document.id, document.data()))
     .sort((left, right) => right.publishedAt - left.publishedAt || left.id.localeCompare(right.id));
   const ids = new Set();

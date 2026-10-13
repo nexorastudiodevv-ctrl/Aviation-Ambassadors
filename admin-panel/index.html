@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة التحكم | إدارة المقالات</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <h1>لوحة التحكم</h1>
+        <nav>
+          <button class="nav-btn active" data-view="dashboard">المقالات</button>
+          <button class="nav-btn" data-view="new-article">مقال جديد</button>
+        </nav>
+        <button id="logoutBtn" class="logout-btn hidden">تسجيل الخروج</button>
+      </aside>
+
+      <main class="content">
+        <section id="loginView" class="panel visible">
+          <div class="login-card">
+            <h2>تسجيل الدخول</h2>
+            <form id="loginForm">
+              <label>
+                البريد الإلكتروني
+                <input type="email" id="emailInput" required placeholder="admin@example.com" />
+              </label>
+              <label>
+                كلمة المرور
+                <input type="password" id="passwordInput" required placeholder="••••••••" />
+              </label>
+              <button type="submit" class="primary-btn">دخول لوحة التحكم</button>
+            </form>
+            <p id="loginMessage" class="message"></p>
+          </div>
+        </section>
+
+        <section id="dashboardView" class="panel hidden">
+          <div class="topbar">
+            <h2>إدارة المقالات</h2>
+            <button id="loadArticlesBtn" class="secondary-btn">تحديث القائمة</button>
+          </div>
+          <p id="dashboardMessage" class="message" role="status" aria-live="polite"></p>
+
+          <div class="stats">
+            <div class="stat-box">
+              <span>إجمالي المقالات</span>
+              <strong id="totalArticles">0</strong>
+            </div>
+            <div class="stat-box">
+              <span>منشورة</span>
+              <strong id="publishedCount">0</strong>
+            </div>
+            <div class="stat-box">
+              <span>مسودة</span>
+              <strong id="draftCount">0</strong>
+            </div>
+          </div>
+
+          <div class="list-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>العنوان</th>
+                  <th>التصنيف</th>
+                  <th>الحالة</th>
+                  <th>تاريخ النشر</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="articlesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="editorView" class="panel hidden">
+          <div class="topbar">
+            <h2 id="editorTitle">مقال جديد</h2>
+            <div class="editor-actions">
+              <p id="editorMessage" class="message" role="status" aria-live="polite"></p>
+              <button id="saveArticleBtn" class="primary-btn" type="submit" form="articleForm">حفظ المقال</button>
+            </div>
+          </div>
+
+          <form id="articleForm" class="article-form">
+            <div class="two-columns">
+              <label>
+                العنوان
+                <input type="text" id="titleInput" required />
+              </label>
+              <label>
+                الرابط المختصر (slug)
+                <input type="text" id="slugInput" required placeholder="example-article-slug" />
+              </label>
+            </div>
+
+            <div class="two-columns">
+              <label>
+                التصنيف
+                <input type="text" id="categoryInput" required />
+              </label>
+              <label>
+                الحالة
+                <select id="statusInput">
+                  <option value="draft">مسودة</option>
+                  <option value="published">منشور</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              الوصف SEO
+              <input type="text" id="descriptionInput" maxlength="200" />
+            </label>
+
+            <label>
+              الملخص
+              <textarea id="excerptInput" rows="3" maxlength="240"></textarea>
+            </label>
+
+            <label>
+              صورة المقال (رابط HTTPS)
+              <input type="url" id="imageUrlInput" placeholder="https://..." />
+            </label>
+
+            <label>
+              وصف الصورة البديل
+              <input type="text" id="imageAltInput" />
+            </label>
+
+            <label>
+              المحتوى (Markdown أو نص عادي)
+              <textarea id="contentInput" rows="18" required></textarea>
+            </label>
+
+            <fieldset class="affiliate-fields">
+              <legend>رابط ترويجي / تسويق بالعمولة (اختياري)</legend>
+              <label>
+                رابط الشركة (HTTPS)
+                <input type="url" id="affiliateUrlInput" placeholder="https://..." />
+              </label>
+              <label>
+                وصف العرض
+                <input type="text" id="affiliateDescriptionInput" maxlength="180" placeholder="مثال: قارن خيارات تأجير السيارات في وجهتك" />
+              </label>
+              <div class="two-columns">
+                <label>
+                  نص زر الرابط
+                  <input type="text" id="affiliateLabelInput" maxlength="70" placeholder="استكشف خيارات التأجير" />
+                </label>
+                <label>
+                  موضع الرابط داخل المقال
+                  <select id="affiliatePositionInput">
+                    <option value="none">بدون رابط ترويجي</option>
+                    <option value="top">بداية المقال</option>
+                    <option value="middle">وسط المقال</option>
+                    <option value="bottom">نهاية المقال</option>
+                  </select>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="two-columns">
+              <label>
+                تاريخ النشر
+                <input type="datetime-local" id="publishedAtInput" />
+              </label>
+              <label>
+                معرف المقال الحالي
+                <input type="text" id="articleIdInput" readonly placeholder="سيتم إنشاء تلقائيًا" />
+              </label>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

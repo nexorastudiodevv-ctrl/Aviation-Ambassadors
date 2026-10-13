@@ -226,6 +226,38 @@ h1 {
   margin-bottom: 0;
 }
 
+.affiliate-cta {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin-block: 28px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-inline-start: 5px solid var(--sun);
+  border-radius: 12px;
+  background: #f7fbff;
+}
+
+.affiliate-cta p,
+.affiliate-cta small {
+  margin: 0;
+  color: var(--muted);
+}
+
+.affiliate-cta a {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: var(--ink-soft);
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.affiliate-cta a:hover {
+  background: var(--ink);
+}
+
 .article-footer {
   display: flex;
   flex-wrap: wrap;
