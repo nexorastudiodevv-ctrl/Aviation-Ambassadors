@@ -22,6 +22,13 @@
 3. أنشئ Fine-grained personal access token للمستودع `nexorastudiodevv-ctrl/Aviation-Ambassadors` بصلاحية **Contents: Read and write**، واحفظه كسر `PAGES_PUBLISH_TOKEN` في GitHub Actions حتى يستطيع سير العمل دفع الصفحات المولدة إلى `main`.
 4. تأكد من السماح لحساب GitHub Actions بكتابة تغييرات إلى الفرع `main` (Settings → Actions → General → Workflow permissions). إذا كان الفرع محميًا، اسمح لهذا المسار بالنشر أو عدّل سياسة الحماية بما يتناسب مع فريقك.
 
+### النشر الفوري من لوحة التحكم
+يمكن للوحة التحكم تشغيل سير النشر فورًا عبر واجهة Vercel الخلفية في `api/publish.js`، من دون وضع رمز GitHub في المتصفح:
+1. انشر هذا المستودع على Vercel، ثم أضف متغيرات البيئة `GITHUB_REPOSITORY=nexorastudiodevv-ctrl/Aviation-Ambassadors`، و`GITHUB_TOKEN` (رمز Fine-grained للمستودع بصلاحية **Actions: Read and write**)، و`ADMIN_ALLOWED_ORIGINS` (أصل لوحة التحكم، مثل `https://avam.nexorastudio-eg.com`، من دون مسار؛ افصل الأصول المتعددة بفاصلة)، و`FIREBASE_SERVICE_ACCOUNT` (محتوى JSON لحساب خدمة Firebase Admin لمشروع `avam-admin-2026-eg` محفوظ كسر).
+2. حدّث `PUBLISH_API_URL` في `admin-panel/firebase-config.js` إلى عنوان نشر Vercel، مثل `https://<اسم-النشر>.vercel.app`، ثم أعد نشر ملفات اللوحة. هذا العنوان عام وليس سرًا؛ لا تضع فيه رموزًا أو مفاتيح خاصة.
+3. تأكد أن حساب المشرف في Firebase يحمل custom claim باسم `admin` وقيمته `true`. يرفض الخادم طلب النشر إذا لم يتحقق من رمز تسجيل الدخول أو من هذه الصلاحية.
+4. امنح رمز `GITHUB_TOKEN` صلاحية **Actions: Read and write** لتشغيل سير العمل، واحتفظ بسر `PAGES_PUBLISH_TOKEN` في GitHub Actions كما في الخطوة السابقة حتى يستطيع السير دفع الصفحات المولدة إلى `main`.
+
 ### شكل المستند
 أنشئ مستندًا في مجموعة `articles`، واجعل معرّف المستند هو الرابط اللاتيني المختصر `slug` نفسه، واستخدم الحقول:
 

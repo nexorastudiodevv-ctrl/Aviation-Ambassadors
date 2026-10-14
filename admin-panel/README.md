@@ -12,7 +12,9 @@ Add `nexorastudiodevv-ctrl.github.io` to Firebase Authentication's authorized do
 
 ## Article publishing
 
-The dashboard saves article documents to the `articles` collection in Firestore. To update the public static website, run **Publish Firebase articles** in GitHub Actions in the `sofara` website repository. Do not place a GitHub token in this dashboard.
+The dashboard saves article documents to the `articles` collection in Firestore. To publish immediately from the dashboard, deploy the website repository to Vercel and configure `GITHUB_REPOSITORY`, `GITHUB_TOKEN` (Fine-grained token with **Actions: Read and write**), `ADMIN_ALLOWED_ORIGINS`, and `FIREBASE_SERVICE_ACCOUNT` in the Vercel project environment. Set `PUBLISH_API_URL` in `firebase-config.js` to that Vercel deployment URL, then redeploy the dashboard. The backend verifies the Firebase ID token and the `admin: true` custom claim before dispatching the GitHub Actions workflow. Never place a GitHub token or service-account key in this dashboard.
+
+The GitHub Actions workflow also runs every 15 minutes and can be started manually from **Actions → Publish Firebase articles → Run workflow**.
 
 ## Affiliate links
 

@@ -295,7 +295,10 @@ async function triggerSiteBuildIfNeeded(payload) {
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(payload)
       });
 
@@ -426,7 +429,7 @@ async function saveArticle() {
 
     showView('dashboard');
     resetForm();
-    setMessage(isPublished ? 'تم حفظ المقال كمنشور وتوليد صفحات الموقع محليًا بنجاح.' : 'تم حفظ المسودة بنجاح.', false);
+    setMessage(isPublished ? 'تم حفظ المقال وإرسال طلب تحديث الموقع بنجاح.' : 'تم حفظ المسودة بنجاح.', false);
   } catch (error) {
     console.error(error);
     setMessage(articleWasSaved

@@ -2,6 +2,22 @@ name: Publish Firebase articles
 
 on:
   workflow_dispatch:
+    inputs:
+      triggeredBy:
+        description: Source that requested the publishing run
+        required: false
+        type: string
+        default: manual
+      articleSlug:
+        description: Slug of the article that was published
+        required: false
+        type: string
+        default: ""
+      articleStatus:
+        description: Current article status
+        required: false
+        type: string
+        default: ""
   schedule:
     - cron: "*/15 * * * *"
 
