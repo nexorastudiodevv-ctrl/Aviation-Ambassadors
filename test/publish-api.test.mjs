@@ -1,9 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 
 import { createPublishHandler } from '../api/publish.js';
 
+const require = createRequire(import.meta.url);
 const allowedOrigin = 'https://admin.example.com';
+
+test('Firebase token verification dependency loads in Vercel Node runtime', () => {
+  assert.doesNotThrow(() => require('jwks-rsa/src/utils.js'));
+});
 
 function createResponse() {
   return {
