@@ -251,6 +251,10 @@ export function renderPage(article) {
   <link rel="stylesheet" href="../../assets/css/blog.css">
   <script type="application/ld+json">${JSON.stringify(schema).replaceAll("<", "\\u003c")}</script>
   <script type="application/ld+json">${JSON.stringify(breadcrumb).replaceAll("<", "\\u003c")}</script>
+  <script>
+    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
   <header class="site-header"><div class="header-inner">
