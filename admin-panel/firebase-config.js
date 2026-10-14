@@ -9,4 +9,4 @@ window.FIREBASE_CONFIG = {
   measurementId: "G-D9RRRYGXRZ"
 };
 
-window.PUBLISH_API_URL = "https://aviation-ambassadors.vercel.app";
+window.PUBLISH_API_URL = "https://aviation-ambassadors.vercel.app/api/publish";
