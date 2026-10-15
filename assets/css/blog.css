@@ -107,11 +107,25 @@ h1 {
   color: var(--muted);
 }
 
+.live-article-status {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.live-article-status:empty {
+  display: none;
+}
+
 .article-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
   gap: 20px;
   padding-bottom: 64px;
+}
+
+#firebaseArticleCards {
+  display: contents;
 }
 
 .article-card {

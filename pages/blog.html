@@ -126,6 +126,7 @@
       <p>تصفح نصائح مقارنة أسعار تذاكر الطيران، وتجنب رسوم الأمتعة، واختيار الوجهة والتخطيط للعائلة والتوقفات. الأسعار ومتطلبات السفر تتغير؛ تحقق منها لدى الناقل والجهات الرسمية قبل الحجز.</p>
     </section>
 
+    <p id="firebaseArticlesStatus" class="live-article-status" role="status" aria-live="polite"></p>
     <section class="article-grid" aria-label="مقالات السفر">
       <article class="article-card">
         <span class="tag">دليل وجهة · دبي</span>
@@ -176,6 +177,7 @@
         <a href="travel-guides/long-layover-guide.html">دليل التخطيط للتوقف الطويل والترانزيت</a>
       </article>
       <!-- FIREBASE_ARTICLES_START -->
+      <div id="firebaseArticleCards" aria-live="polite">
       <article class="article-card">
         <span class="tag">نصائح السفر · نُشر في 2026-10-13</span>
         <h2>كيف تختار مقعدك في الطائرة؟</h2>
@@ -200,6 +202,7 @@
         <p>ائمة مبسطة تساعدك على مراجعة أهم تفاصيل الرحلة وتجهيز احتياجاتك</p>
         <a href="articles/travel-day-airport-checklist.html">اقرأ المقال: كيف تستعد ليوم السفر في المطار؟ قائمة سهلة للمسافرين</a>
       </article>
+      </div>
       <!-- FIREBASE_ARTICLES_END -->
     </section>
   </main>
@@ -208,5 +211,9 @@
     <p>© 2026 سفراء الطيران · راجع المصادر الرسمية للتفاصيل المتغيرة قبل السفر.</p>
     <a href="../index.html">العودة إلى الصفحة الرئيسية</a>
   </footer>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="../admin-panel/firebase-config.js"></script>
+  <script src="../assets/js/live-articles.js"></script>
 </body>
 </html>

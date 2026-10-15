@@ -70,25 +70,51 @@ function setMessage(text, isError = true) {
 
 function resetForm() {
   form.reset();
-  fields.status.value = 'draft';
+  fields.status.value = 'published';
   fields.articleId.value = '';
   state.selectedArticleId = null;
   editorTitle.textContent = 'مقال جديد';
 }
 
+function generateArticleSlug(title) {
+  const readableSlug = title.toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/g, '');
+
+  return `${readableSlug || 'article'}-${Date.now()}`;
+}
+
+function createExcerpt(content) {
+  return content
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[`*_>#-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 240);
+}
+
 function getArticlePayload() {
+  const title = fields.title.value.trim();
+  const content = fields.content.value.trim();
+  const excerpt = fields.excerpt.value.trim() || createExcerpt(content);
   const publishedAtValue = fields.publishedAt.value ? new Date(fields.publishedAt.value).toISOString() : new Date().toISOString();
 
   return {
-    slug: fields.slug.value.trim(),
-    title: fields.title.value.trim(),
-    category: fields.category.value.trim(),
+    slug: fields.slug.value.trim() || generateArticleSlug(title),
+    title,
+    category: fields.category.value.trim() || 'عام',
     status: fields.status.value,
-    description: fields.description.value.trim(),
-    excerpt: fields.excerpt.value.trim(),
+    description: fields.description.value.trim() || excerpt.slice(0, 200),
+    excerpt,
     imageUrl: fields.imageUrl.value.trim(),
     imageAlt: fields.imageAlt.value.trim(),
-    content: fields.content.value.trim(),
+    content,
     affiliateUrl: fields.affiliateUrl.value.trim(),
     affiliateDescription: fields.affiliateDescription.value.trim(),
     affiliateLabel: fields.affiliateLabel.value.trim(),
@@ -101,10 +127,7 @@ function getArticlePayload() {
 function getPublishedArticleValidationError(payload) {
   const requiredFields = [
     ['title', 'العنوان'],
-    ['description', 'وصف SEO'],
-    ['excerpt', 'الملخص'],
-    ['content', 'المحتوى'],
-    ['category', 'التصنيف']
+    ['content', 'المحتوى']
   ];
   const missingFields = requiredFields
     .filter(([field]) => !payload[field])
@@ -375,7 +398,7 @@ async function saveArticle() {
     return;
   }
 
-  const originalButtonText = saveArticleButton.textContent;
+  const originalButtonText = saveArticleButton.textContent || 'حفظ المقال';
   const isPublished = shouldTriggerBuild(payload);
   if (isPublished) {
     const validationError = getPublishedArticleValidationError(payload);
@@ -396,13 +419,14 @@ async function saveArticle() {
 
   let articleWasSaved = false;
   saveArticleButton.disabled = true;
-  saveArticleButton.textContent = 'جارٍ الحفظ...';
-  setMessage(isPublished ? 'جارٍ حفظ المقال وتجهيز نشره...' : 'جارٍ حفظ المسودة...', false);
+  saveArticleButton.textContent = isPublished ? 'جارٍ الحفظ والنشر...' : 'جارٍ الحفظ...';
+  setMessage(isPublished ? 'جارٍ حفظ المقال ونشره مباشرة على الموقع...' : 'جارٍ حفظ المسودة...', false);
 
   try {
     if (state.selectedArticleId) {
       await db.collection('articles').doc(state.selectedArticleId).update(payload);
     } else {
+      fields.slug.value = payload.slug;
       const docRef = db.collection('articles').doc(payload.slug);
       await docRef.set({ ...payload, createdAt: new Date().toISOString() });
       state.selectedArticleId = docRef.id;
@@ -412,24 +436,9 @@ async function saveArticle() {
 
     await loadArticles();
 
-    if (isPublished) {
-      const buildStatus = await triggerSiteBuildIfNeeded(payload);
-      if (!buildStatus.ok) {
-        if (buildStatus.deferred) {
-          showView('dashboard');
-          resetForm();
-          setMessage(`تم حفظ المقال في Firebase، لكن ${buildStatus.message} شغّل سير "Publish Firebase articles" في GitHub Actions لتحديث الموقع.`);
-          return;
-        }
-
-        setMessage(`تم حفظ المقال في Firebase، لكن تعذّر تحديث صفحات الموقع: ${buildStatus.message}`);
-        return;
-      }
-    }
-
     showView('dashboard');
     resetForm();
-    setMessage(isPublished ? 'تم حفظ المقال وإرسال طلب تحديث الموقع بنجاح.' : 'تم حفظ المسودة بنجاح.', false);
+    setMessage(isPublished ? 'تم حفظ المقال ونشره مباشرة على الموقع.' : 'تم حفظ المسودة بنجاح.', false);
   } catch (error) {
     console.error(error);
     setMessage(articleWasSaved

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg">
+  <title>مقال السفر | سفراء الطيران</title>
+  <meta name="description" content="اقرأ أحدث أدلة السفر ونصائح الطيران من سفراء الطيران.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="ar_SA">
+  <meta property="og:site_name" content="سفراء الطيران">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/blog.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">✈ سفراء الطيران</a>
+      <nav class="site-nav" aria-label="القائمة الرئيسية">
+        <a href="../index.html">الرئيسية</a>
+        <a href="blog.html" aria-current="page">مدونة السفر</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container article-main">
+    <nav class="breadcrumb" aria-label="مسار التنقل">
+      <a href="../index.html">الرئيسية</a> ← <a href="blog.html">مدونة السفر</a>
+    </nav>
+    <article id="liveArticle" class="article">
+      <p id="articleStatus" role="status" aria-live="polite">جارٍ تحميل المقال...</p>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <p>© 2026 سفراء الطيران</p>
+    <a href="blog.html">مدونة السفر</a>
+  </footer>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@16.2.1/lib/marked.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+  <script src="../admin-panel/firebase-config.js"></script>
+  <script src="../assets/js/live-article.js"></script>
+</body>
+</html>

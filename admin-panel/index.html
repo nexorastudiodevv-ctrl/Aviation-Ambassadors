@@ -90,32 +90,32 @@
                 <input type="text" id="titleInput" required />
               </label>
               <label>
-                الرابط المختصر (slug)
-                <input type="text" id="slugInput" required placeholder="example-article-slug" />
+                الرابط المختصر (اختياري)
+                <input type="text" id="slugInput" placeholder="يتم إنشاؤه تلقائيًا إذا تركته فارغًا" />
               </label>
             </div>
 
             <div class="two-columns">
               <label>
                 التصنيف
-                <input type="text" id="categoryInput" required />
+                <input type="text" id="categoryInput" placeholder="عام" />
               </label>
               <label>
                 الحالة
                 <select id="statusInput">
+                  <option value="published" selected>منشور فوراً</option>
                   <option value="draft">مسودة</option>
-                  <option value="published">منشور</option>
                 </select>
               </label>
             </div>
 
             <label>
-              الوصف SEO
+              وصف SEO (اختياري)
               <input type="text" id="descriptionInput" maxlength="200" />
             </label>
 
             <label>
-              الملخص
+              الملخص (اختياري)
               <textarea id="excerptInput" rows="3" maxlength="240"></textarea>
             </label>
 

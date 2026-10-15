@@ -159,7 +159,7 @@ function renderMarkdown(markdown) {
 }
 
 function articleUrl(article) {
-  return `${siteUrl}/pages/articles/${article.id}.html`;
+  return `${siteUrl}/pages/article.html?slug=${encodeURIComponent(article.id)}`;
 }
 
 function renderAffiliateCta(article) {
@@ -278,7 +278,7 @@ export function renderCard(article) {
         <span class="tag">${escapeHtml(article.category)} · نُشر في ${htmlDate(article.publishedAt)}</span>
         <h2>${escapeHtml(article.title)}</h2>
         <p>${escapeHtml(article.excerpt)}</p>
-        <a href="articles/${escapeHtml(article.id)}.html">اقرأ المقال: ${escapeHtml(article.title)}</a>
+        <a href="article.html?slug=${encodeURIComponent(article.id)}">اقرأ المقال: ${escapeHtml(article.title)}</a>
       </article>`;
 }
 
@@ -288,7 +288,7 @@ export function updateBlog(blogHtml, articles) {
   }
   let updated = blogHtml.replace(
     markerPattern,
-    `<!-- FIREBASE_ARTICLES_START -->\n${articles.map(renderCard).join("\n")}\n      <!-- FIREBASE_ARTICLES_END -->`
+    `<!-- FIREBASE_ARTICLES_START -->\n      <div id="firebaseArticleCards" aria-live="polite">\n${articles.map(renderCard).join("\n")}\n      </div>\n      <!-- FIREBASE_ARTICLES_END -->`
   );
 
   const scriptPattern = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g;
@@ -306,7 +306,8 @@ export function updateBlog(blogHtml, articles) {
 
   const collection = JSON.parse(collectionScript[1]);
   const fixedItems = collection.mainEntity.itemListElement.filter(
-    (item) => !item.url.startsWith(`${siteUrl}/pages/articles/`)
+    (item) => !item.url.startsWith(`${siteUrl}/pages/article.html?slug=`)
+      && !item.url.startsWith(`${siteUrl}/pages/articles/`)
   );
   const generatedItems = articles.map((article) => ({
     "@type": "ListItem",
@@ -324,7 +325,7 @@ export function updateBlog(blogHtml, articles) {
 
 export function updateSitemap(sitemap, articles) {
   const generatedUrl = new RegExp(
-    `\\s*<url>\\s*<loc>${siteUrl.replaceAll(".", "\\.")}/pages/articles/[^<]+</loc>[\\s\\S]*?</url>`,
+    `\\s*<url>\\s*<loc>${siteUrl.replaceAll(".", "\\.")}/pages/(?:article\\.html\\?slug=[^<]+|articles/[^<]+\\.html)</loc>[\\s\\S]*?</url>`,
     "g"
   );
   let updated = sitemap.replace(generatedUrl, "");
