@@ -434,11 +434,19 @@ async function saveArticle() {
     }
     articleWasSaved = true;
 
+    const triggerResult = await triggerSiteBuildIfNeeded(payload);
+    if (!triggerResult.ok && !triggerResult.skipped) {
+      setMessage(triggerResult.message || 'تعذّر نشر المقال بعد الحفظ.');
+      return;
+    }
+
     await loadArticles();
 
     showView('dashboard');
     resetForm();
-    setMessage(isPublished ? 'تم حفظ المقال ونشره مباشرة على الموقع.' : 'تم حفظ المسودة بنجاح.', false);
+    setMessage(isPublished
+      ? (triggerResult.skipped ? 'تم حفظ المقال بنجاح، لكن النشر تم تأجيله.' : 'تم حفظ المقال ونشره مباشرة على الموقع.')
+      : 'تم حفظ المسودة بنجاح.', false);
   } catch (error) {
     console.error(error);
     setMessage(articleWasSaved
