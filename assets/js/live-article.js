@@ -49,9 +49,13 @@
   function renderArticle(article) {
     const title = String(article.title || 'مقال سفر');
     document.title = `${title} | سفراء الطيران`;
-    document.querySelector('meta[name="description"]').content = article.description || article.excerpt || '';
-    document.querySelector('meta[property="og:title"]').content = title;
-    document.querySelector('meta[property="og:description"]').content = article.description || article.excerpt || '';
+    const description = article.description || article.excerpt || '';
+    const descriptionMeta = document.querySelector('meta[name="description"]');
+    const openGraphTitle = document.querySelector('meta[property="og:title"]');
+    const openGraphDescription = document.querySelector('meta[property="og:description"]');
+    if (descriptionMeta) descriptionMeta.content = description;
+    if (openGraphTitle) openGraphTitle.content = title;
+    if (openGraphDescription) openGraphDescription.content = description;
 
     const content = document.createElement('div');
     content.innerHTML = DOMPurify.sanitize(marked.parse(String(article.content || ''), { async: false }), {
