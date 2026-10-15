@@ -4,6 +4,12 @@ import test from "node:test";
 
 const homeUrl = new URL("../index.html", import.meta.url);
 
+test("homepage hero keeps a space after the hidden mobile line break", async () => {
+  const html = await readFile(homeUrl, "utf8");
+
+  assert.match(html, /أوضح<br class="hidden sm:block">\s+من اختيار الوجهة/);
+});
+
 test("destination cards link to the matching guide or travel guide directory", async () => {
   const html = await readFile(homeUrl, "utf8");
   const section = html.match(/<section id="destinations"[\s\S]*?<\/section>/)?.[0];
