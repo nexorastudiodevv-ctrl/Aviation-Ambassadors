@@ -2,4 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /admin-panel/
 
+Agentmap: https://avam.nexorastudio-eg.com/.well-known/ard.json
 Sitemap: https://avam.nexorastudio-eg.com/sitemap.xml

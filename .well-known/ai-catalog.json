@@ -1,0 +1,16 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "سفراء الطيران",
+    "identifier": "https://avam.nexorastudio-eg.com/"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:avam.nexorastudio-eg.com:website:travel-guides",
+      "displayName": "أدلة السفر من سفراء الطيران",
+      "type": "text/html",
+      "url": "https://avam.nexorastudio-eg.com/",
+      "description": "موقع عربي يضم أدلة السفر والتخطيط للرحلات ومقارنة تكلفة الطيران."
+    }
+  ]
+}

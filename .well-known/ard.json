@@ -1,0 +1,17 @@
+{
+  "@context": "https://agenticresourcediscovery.org/context/v1",
+  "entries": [
+    {
+      "identifier": "urn:air:avam.nexorastudio-eg.com:website:travel-guides",
+      "displayName": "أدلة السفر من سفراء الطيران",
+      "type": "text/html",
+      "url": "https://avam.nexorastudio-eg.com/",
+      "description": "موقع عربي يضم أدلة السفر والتخطيط للرحلات ومقارنة تكلفة الطيران.",
+      "representativeQueries": [
+        "أريد أدلة سفر ونصائح للتخطيط للرحلات",
+        "كيف أقارن أسعار الطيران وأخطط لرحلتي؟",
+        "ما نصائح السفر إلى دبي وإسطنبول؟"
+      ]
+    }
+  ]
+}
