@@ -36,17 +36,36 @@
     return card;
   }
 
+  function updateFeaturedOffer(articles) {
+    const offerLink = document.getElementById('featuredOfferLink');
+    if (!offerLink) return;
+
+    const latestOffer = articles.find((article) => {
+      if (typeof article.affiliateUrl !== 'string' || !article.affiliateLabel?.trim()) return false;
+      try {
+        return new URL(article.affiliateUrl).protocol === 'https:';
+      } catch {
+        return false;
+      }
+    });
+    if (!latestOffer) return;
+
+    offerLink.href = latestOffer.affiliateUrl;
+    offerLink.textContent = `✈️ ${latestOffer.affiliateLabel.trim()}`;
+    offerLink.rel = 'sponsored nofollow noopener noreferrer';
+  }
+
   if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
   firebase.firestore().collection('articles')
     .where('status', '==', 'published')
     .onSnapshot((snapshot) => {
       const articles = snapshot.docs
         .map((document) => ({ id: document.id, ...document.data() }))
-        .sort((left, right) => toDate(right.publishedAt) - toDate(left.publishedAt))
-        .slice(0, 3);
+        .sort((left, right) => toDate(right.publishedAt) - toDate(left.publishedAt));
 
+      updateFeaturedOffer(articles);
       if (articles.length) {
-        cardsContainer.replaceChildren(...articles.map(createCard));
+        cardsContainer.replaceChildren(...articles.slice(0, 3).map(createCard));
       }
     }, (error) => {
       console.error('Unable to load published Firebase articles on the homepage:', error);
