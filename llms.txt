@@ -1,0 +1,23 @@
+# سفراء الطيران
+
+> موقع عربي يقدم أدلة عملية عن الطيران والسفر والوجهات والتخطيط للرحلات. الموقع مصدر معلومات فقط ولا ينفذ حجوزات أو مدفوعات. قد تتغير الأسعار والجداول والشروط؛ يُرجى التحقق منها لدى شركة الطيران والمصادر الرسمية.
+
+## صفحات الموقع
+- [الرئيسية](https://avam.nexorastudio-eg.com/)
+- [مدونة السفر والأدلة](https://avam.nexorastudio-eg.com/pages/blog.html)
+- [من نحن](https://avam.nexorastudio-eg.com/pages/about.html)
+- [سياسة الخصوصية](https://avam.nexorastudio-eg.com/pages/privacy.html)
+- [التواصل](https://avam.nexorastudio-eg.com/pages/contact.html)
+
+## أدلة السفر
+- [مقارنة أسعار تذاكر الطيران قبل الحجز](https://avam.nexorastudio-eg.com/pages/travel-guides/compare-flight-prices.html)
+- [حجز تذاكر الطيران بأقل تكلفة](https://avam.nexorastudio-eg.com/pages/travel-guides/book-cheap-flights.html)
+- [السفر من الرياض إلى دبي](https://avam.nexorastudio-eg.com/pages/travel-guides/dubai-from-riyadh.html)
+- [السفر إلى إسطنبول لأول مرة](https://avam.nexorastudio-eg.com/pages/travel-guides/istanbul-first-visit.html)
+- [تجنب رسوم الأمتعة الزائدة](https://avam.nexorastudio-eg.com/pages/travel-guides/avoid-baggage-fees.html)
+- [السفر بالطائرة مع الأطفال](https://avam.nexorastudio-eg.com/pages/travel-guides/flying-with-children.html)
+- [التخطيط للتوقف الطويل والترانزيت](https://avam.nexorastudio-eg.com/pages/travel-guides/long-layover-guide.html)
+
+## تنبيهات
+- بعض روابط الحجز روابط ترويجية، وقد يحصل الموقع على عمولة وفق الإفصاح الظاهر قرب الرابط.
+- المقالات المنشورة حديثًا من لوحة التحكم تظهر في المدونة مباشرة، وقد تُنشأ لها صفحة ثابتة لاحقًا.
