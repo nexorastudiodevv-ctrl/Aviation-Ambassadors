@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { collection, getDocs, getFirestore, query, Timestamp, where } from "firebase/firestore";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import firebasePublicConfig from "./firebase-public-config.mjs";
@@ -159,7 +159,7 @@ function renderMarkdown(markdown) {
 }
 
 function articleUrl(article) {
-  return `${siteUrl}/pages/article.html?slug=${encodeURIComponent(article.id)}`;
+  return `${siteUrl}/pages/articles/${article.id}.html`;
 }
 
 function renderAffiliateCta(article) {
@@ -267,7 +267,7 @@ export function renderPage(article) {
       <div class="article-footer"><a href="/pages/blog.html">كل أدلة السفر</a><a href="/">العودة إلى الرئيسية</a></div>
     </article>
   </main>
-  <footer class="site-footer"><p>© 2026 سفراء الطيران</p><a href="/pages/blog.html">مدونة السفر</a></footer>
+  <footer class="site-footer"><p>© 2026 سفراء الطيران</p><a href="/pages/blog.html">مدونة السفر</a><a href="/pages/about.html">من نحن</a><a href="/pages/privacy.html">سياسة الخصوصية</a><a href="/pages/contact.html">تواصل معنا</a></footer>
 </body>
 </html>
 `;
@@ -278,7 +278,7 @@ export function renderCard(article) {
         <span class="tag">${escapeHtml(article.category)} · نُشر في ${htmlDate(article.publishedAt)}</span>
         <h2>${escapeHtml(article.title)}</h2>
         <p>${escapeHtml(article.excerpt)}</p>
-        <a href="article.html?slug=${encodeURIComponent(article.id)}">اقرأ المقال: ${escapeHtml(article.title)}</a>
+        <a href="articles/${escapeHtml(article.id)}.html">اقرأ المقال: ${escapeHtml(article.title)}</a>
       </article>`;
 }
 
@@ -321,6 +321,21 @@ export function updateBlog(blogHtml, articles) {
 
   const encoded = JSON.stringify(collection, null, 2);
   return updated.replace(collectionScript[0], `<script type="application/ld+json">\n${encoded}\n  </script>`);
+}
+
+function findPreviouslyGeneratedArticleIds(blogHtml) {
+  const match = blogHtml.match(markerPattern);
+  if (!match) {
+    throw new Error("Firebase article markers are missing from pages/blog.html.");
+  }
+  return [...match[0].matchAll(/href="articles\/([a-z0-9]+(?:-[a-z0-9]+)*)\.html"/g)]
+    .map(([, slug]) => slug);
+}
+
+export function getObsoleteArticleIds(blogHtml, articles) {
+  const currentArticleIds = new Set(articles.map((article) => article.id));
+  return [...new Set(findPreviouslyGeneratedArticleIds(blogHtml))]
+    .filter((id) => !currentArticleIds.has(id));
 }
 
 export function updateSitemap(sitemap, articles) {
@@ -369,17 +384,17 @@ async function readPublishedArticles() {
 
 async function main() {
   const articles = await readPublishedArticles();
+  const blogHtml = await readFile(blogPath, "utf8");
+
   await mkdir(articlesPath, { recursive: true });
-  const existingFiles = await readdir(articlesPath);
-  for (const file of existingFiles) {
-    if (file.endsWith(".html")) await rm(path.join(articlesPath, file));
+  for (const id of getObsoleteArticleIds(blogHtml, articles)) {
+    await rm(path.join(articlesPath, `${id}.html`), { force: true });
   }
 
   for (const article of articles) {
     await writeFile(path.join(articlesPath, `${article.id}.html`), renderPage(article), "utf8");
   }
 
-  const blogHtml = await readFile(blogPath, "utf8");
   await writeFile(blogPath, updateBlog(blogHtml, articles), "utf8");
 
   const sitemap = await readFile(sitemapPath, "utf8");

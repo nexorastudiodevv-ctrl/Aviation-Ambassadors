@@ -12,9 +12,9 @@ Add `nexorastudiodevv-ctrl.github.io` to Firebase Authentication's authorized do
 
 ## Article publishing
 
-The dashboard saves article documents to the `articles` collection in Firestore. To publish immediately from the dashboard, deploy the website repository to Vercel and configure `GITHUB_REPOSITORY`, `GITHUB_TOKEN` (Fine-grained token with **Actions: Read and write**), `ADMIN_ALLOWED_ORIGINS`, and `FIREBASE_SERVICE_ACCOUNT` in the Vercel project environment. Set `PUBLISH_API_URL` in `firebase-config.js` to that Vercel deployment URL, then redeploy the dashboard. The backend verifies the Firebase ID token and the `admin: true` custom claim before dispatching the GitHub Actions workflow. Never place a GitHub token or service-account key in this dashboard.
+The dashboard saves article documents to the `articles` collection in Firestore. Published articles appear on the live homepage and blog directly from Firestore. GitHub Actions periodically generates static article pages and updates the sitemap for search engine indexing. The dashboard requires an authenticated Firebase account with the `admin: true` custom claim, and Firestore rules must allow public reads only for published articles.
 
-The GitHub Actions workflow also runs every 15 minutes and can be started manually from **Actions → Publish Firebase articles → Run workflow**.
+The GitHub Actions workflow runs every 15 minutes and uses the repository-scoped `GITHUB_TOKEN` to publish generated pages. Ensure the repository permits workflows to write to `main`.
 
 ## Affiliate links
 

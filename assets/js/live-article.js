@@ -56,6 +56,13 @@
     if (descriptionMeta) descriptionMeta.content = description;
     if (openGraphTitle) openGraphTitle.content = title;
     if (openGraphDescription) openGraphDescription.content = description;
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      document.head.append(canonicalLink);
+    }
+    canonicalLink.href = `${window.location.origin}/pages/articles/${encodeURIComponent(slug)}.html`;
 
     const content = document.createElement('div');
     content.innerHTML = DOMPurify.sanitize(marked.parse(String(article.content || ''), { async: false }), {

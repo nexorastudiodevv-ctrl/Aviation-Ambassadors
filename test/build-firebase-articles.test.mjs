@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  getObsoleteArticleIds,
   loadFirebasePublicConfig,
   renderPage,
   updateBlog,
@@ -32,7 +33,7 @@ test("renders a static article with canonical metadata and sanitized Markdown", 
   const article = validateArticle(validArticle.slug, validArticle);
   const html = renderPage(article);
 
-  assert.match(html, /rel="canonical" href="https:\/\/avam\.nexorastudio-eg\.com\/pages\/article\.html\?slug=family-flight-guide"/);
+  assert.match(html, /rel="canonical" href="https:\/\/avam\.nexorastudio-eg\.com\/pages\/articles\/family-flight-guide\.html"/);
   assert.match(html, /<h1>دليل السفر مع العائلة<\/h1>/);
   assert.match(html, /نصائح <strong>عملية<\/strong> قبل السفر/);
   assert.doesNotMatch(html, /<script>alert\(1\)<\/script>/);
@@ -97,10 +98,30 @@ test("adds Firestore cards and structured data without removing existing guides"
   const article = validateArticle(validArticle.slug, validArticle);
   const updated = updateBlog(blog, [article]);
 
-  assert.match(updated, /article\.html\?slug=family-flight-guide/);
+  assert.match(updated, /articles\/family-flight-guide\.html/);
   assert.match(updated, /دليل السفر مع العائلة/);
   assert.match(updated, /"numberOfItems": 9/);
   assert.match(updated, /travel-guides\/dubai-from-riyadh\.html/);
+});
+
+test("only removes obsolete pages represented in the Firebase article section", async () => {
+  const blogPath = new URL("../pages/blog.html", import.meta.url);
+  const blog = await readFile(blogPath, "utf8");
+  const withOldGeneratedArticle = blog.replace(
+    "<!-- FIREBASE_ARTICLES_END -->",
+    `      <article><a href="articles/old-firebase-article.html">Old</a></article>\n      <!-- FIREBASE_ARTICLES_END -->`
+  );
+
+  const currentlyPublished = [
+    validArticle,
+    { id: "how-to-choose-airplane-seat" },
+    { id: "first-flight-preparation-guide" },
+    { id: "travel-checklist-before-flight" },
+    { id: "travel-day-airport-checklist" }
+  ];
+  assert.deepEqual(getObsoleteArticleIds(withOldGeneratedArticle, currentlyPublished), [
+    "old-firebase-article"
+  ]);
 });
 
 test("updates sitemap entries and removes unpublished generated URLs", async () => {
@@ -114,14 +135,16 @@ test("updates sitemap entries and removes unpublished generated URLs", async () 
     <lastmod>2026-01-01</lastmod>
   </url>
   <url><loc>https://avam.nexorastudio-eg.com/pages/articles/old-post.html</loc></url>
+  <url><loc>https://avam.nexorastudio-eg.com/pages/article.html?slug=old-query-post</loc></url>
 </urlset>`,
     [article]
   );
 
-  assert.match(updated, /pages\/article\.html\?slug=family-flight-guide/);
+  assert.match(updated, /pages\/articles\/family-flight-guide\.html/);
   assert.match(updated, /<lastmod>2026-10-13<\/lastmod>/);
   assert.match(updated, /<loc>https:\/\/avam\.nexorastudio-eg\.com\/pages\/blog\.html<\/loc>\s*<lastmod>2026-10-13<\/lastmod>/);
   assert.doesNotMatch(updated, /pages\/articles\/old-post\.html/);
+  assert.doesNotMatch(updated, /pages\/article\.html\?slug=old-query-post/);
 });
 
 test("loads the public Firebase configuration without depending on the dashboard repository", () => {
