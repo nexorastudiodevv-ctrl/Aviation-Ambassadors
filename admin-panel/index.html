@@ -91,7 +91,7 @@
               </label>
               <label>
                 الرابط المختصر (اختياري)
-                <input type="text" id="slugInput" placeholder="يتم إنشاؤه تلقائيًا إذا تركته فارغًا" />
+                <input type="text" id="slugInput" dir="ltr" inputmode="url" autocapitalize="none" spellcheck="false" placeholder="يتم إنشاؤه تلقائيًا إذا تركته فارغًا" />
               </label>
             </div>
 
@@ -180,6 +180,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
