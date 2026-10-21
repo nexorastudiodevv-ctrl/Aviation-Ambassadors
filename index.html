@@ -166,7 +166,7 @@
             <button type="submit" class="rounded-full bg-[var(--color-ink)] px-7 py-3 font-extrabold text-white transition hover:bg-[var(--color-ink-soft)]">ابحث عن الأسعار</button>
           </div>
         </form>
-        <p id="flight-search-status" class="mt-5 text-center text-sm text-slate-600" role="status" aria-live="polite">اختر مدينتي السفر والتواريخ لعرض تقويم الأسعار التقديرية بالريال السعودي.</p>
+        <p id="flight-search-status" class="mt-5 text-center text-sm text-slate-600" role="status" aria-live="polite">اختر مدينتي السفر وتاريخي الذهاب والعودة لعرض الرحلات وأسعارها التقديرية.</p>
       </div>
     </section>
 
@@ -568,9 +568,8 @@
         returnDateInput.required = Boolean(isRoundTrip);
         returnDateInput.min = departureDateInput.value ? getNextDate(departureDateInput.value) : todayString;
         flightSearchStatus.textContent = isRoundTrip
-          ? 'اختر مدينتي السفر من الدول العربية المتاحة وتاريخي الذهاب والعودة لعرض تقويم الأسعار.'
-          : 'تم اختيار الذهاب فقط؛ مزوّد الأسعار الحالي يدعم تقويم الذهاب والعودة فقط.';
-        flightPriceResults.replaceChildren();
+          ? 'اختر مدينتي السفر من الدول العربية المتاحة وتاريخي الذهاب والعودة لعرض الرحلات وأسعارها.'
+          : 'البحث عن الرحلات الكاملة متاح حاليًا لرحلات الذهاب والعودة فقط.';
       };
 
       flightSearchForm.querySelectorAll('input[name="tripType"]').forEach((tripTypeInput) => {
@@ -591,7 +590,7 @@
 
         const selectedTrip = flightSearchForm.querySelector('input[name="tripType"]:checked');
         if (selectedTrip?.value !== 'roundtrip') {
-          flightSearchStatus.textContent = 'عرض الأسعار متاح حاليًا لرحلات الذهاب والعودة فقط؛ لم يتم إرسال طلب.';
+          flightSearchStatus.textContent = 'عرض الرحلات الكاملة متاح حاليًا لرحلات الذهاب والعودة فقط؛ لم يتم إرسال طلب.';
           return;
         }
 

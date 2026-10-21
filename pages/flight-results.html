@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>نتائج أسعار الرحلات | سفراء الطيران</title>
-  <meta name="description" content="قارن تواريخ وأسعار الرحلات التقديرية حسب المسار الذي اخترته.">
+  <title>نتائج الرحلات وأسعارها | سفراء الطيران</title>
+  <meta name="description" content="قارن الرحلات، وشركات الطيران، ومواعيد وأسعار رحلات الذهاب والعودة.">
   <meta name="robots" content="noindex, follow">
   <link rel="icon" type="image/svg+xml" sizes="any" href="../favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,7 +39,7 @@
     <section class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8" aria-labelledby="results-heading">
       <div class="flex flex-wrap items-start justify-between gap-5">
         <div>
-          <p class="text-sm font-bold text-[var(--color-mint)]">مقارنة تواريخ وأسعار الرحلات</p>
+          <p class="text-sm font-bold text-[var(--color-mint)]">رحلات الذهاب والعودة</p>
           <h1 id="results-heading" class="mt-2 text-2xl font-black sm:text-3xl">نتائج البحث</h1>
           <p id="route-summary" class="mt-3 flex flex-wrap items-center gap-2 text-base font-bold text-slate-600" aria-live="polite">جارٍ تجهيز تفاصيل الرحلة...</p>
         </div>
@@ -51,26 +51,26 @@
 
       <div class="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950" role="note">
         <span aria-hidden="true" class="text-lg">ⓘ</span>
-        <p><strong>معلومة مهمة:</strong> النتائج الحالية تقويم أسعار تقديري للتواريخ، وليست قائمة رحلات مؤكدة؛ لا تتوفر أسماء شركات الطيران أو أوقات الرحلات في بيانات مزوّد الخدمة الحالية.</p>
+        <p><strong>تنبيه:</strong> الأسعار والتوفر تقديرية وقد تتغير لدى شركة الطيران أو جهة الحجز. تحقق من التفاصيل النهائية قبل الدفع.</p>
       </div>
 
       <div class="mt-7 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
-          <h2 class="text-xl font-black">الأسعار حسب تاريخ المغادرة</h2>
-          <p id="results-count" class="mt-1 text-sm text-slate-500" aria-live="polite">جارٍ تحميل الأسعار...</p>
+          <h2 class="text-xl font-black">الرحلات المتاحة</h2>
+          <p id="results-count" class="mt-1 text-sm text-slate-500" aria-live="polite">جارٍ تحميل الرحلات...</p>
         </div>
         <label class="flex items-center gap-2 text-sm font-bold">
           ترتيب النتائج
           <select id="sort-results" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-[var(--color-ink)]" disabled>
             <option value="price">الأقل سعرًا</option>
-            <option value="date">تاريخ المغادرة</option>
+            <option value="duration">الأقصر مدة</option>
           </select>
         </label>
       </div>
 
-      <p id="results-status" class="py-10 text-center text-sm font-semibold text-slate-600" role="status" aria-live="polite">جارٍ تحميل تقويم الأسعار...</p>
+      <p id="results-status" class="py-10 text-center text-sm font-semibold text-slate-600" role="status" aria-live="polite">جارٍ البحث عن الرحلات...</p>
       <div id="flight-price-results" class="grid gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite"></div>
-      <p class="mt-6 rounded-xl bg-slate-100 p-4 text-xs leading-6 text-slate-600">الأسعار تقريبية وقابلة للتغيير حسب التوفر وشروط الحجز. مدة الإقامة في التواريخ البديلة مماثلة لمدة الإقامة التي اخترتها. تحقّق من السعر النهائي لدى شركة الطيران أو جهة الحجز.</p>
+      <p class="mt-6 rounded-xl bg-slate-100 p-4 text-xs leading-6 text-slate-600">الأسعار ومعلومات الرحلات من مزوّد البحث وقد تتغير أو تختلف حسب التوفر وشروط الحجز. تحقق من السعر والتفاصيل النهائية مباشرة لدى الناقل أو جهة الحجز.</p>
     </section>
   </main>
 
@@ -111,11 +111,109 @@
       year: 'numeric',
       timeZone: 'UTC'
     }).format(new Date(`${value}T00:00:00.000Z`));
-    const formatPrice = new Intl.NumberFormat('ar-SA', {
+    const formatPrice = (value, currency = 'SAR') => new Intl.NumberFormat('ar-SA', {
       style: 'currency',
-      currency: 'SAR',
+      currency: /^[A-Z]{3}$/.test(currency) ? currency : 'SAR',
       maximumFractionDigits: 0
-    });
+    }).format(value);
+
+    const getPrice = (offer) => {
+      const value = offer.price ?? offer.totalPrice ?? offer.amount;
+      const amount = typeof value === 'object' && value !== null
+        ? Number(value.amount ?? value.raw ?? value.value ?? value.total ?? value.price)
+        : Number(String(value ?? '').replace(/[^\d.-]/g, ''));
+      const currency = offer.currency || offer.price?.currency || 'SAR';
+      return Number.isFinite(amount) ? { amount, currency } : null;
+    };
+
+    const getSegments = (offer) => {
+      const segments = offer.flights || offer.segments || offer.legs || offer.flightSegments;
+      if (Array.isArray(segments)) {
+        return segments.flatMap((leg) => Array.isArray(leg?.segments) ? leg.segments : [leg]);
+      }
+      const outbound = offer.outboundFlight || offer.outbound || offer.departure;
+      const inbound = offer.inboundFlight || offer.inbound || offer.return;
+      return [outbound, inbound].filter((leg) => leg && typeof leg === 'object');
+    };
+
+    const getField = (object, ...keys) => {
+      for (const key of keys) {
+        const value = object?.[key];
+        if (typeof value === 'string' || typeof value === 'number') return String(value);
+        if (value && typeof value === 'object') {
+          const nested = value.name || value.time || value.dateTime || value.datetime || value.code;
+          if (typeof nested === 'string' || typeof nested === 'number') return String(nested);
+        }
+      }
+      return '';
+    };
+
+    const getAirportName = (segment, field) => {
+      const airport = segment?.[`${field}_airport`] || segment?.[`${field}Airport`];
+      if (airport && typeof airport === 'object') {
+        return airport.name || airport.code || airport.id || '';
+      }
+      return getField(segment, `${field}Airport`, `${field}_airport`, `${field}Name`, `${field}_name`);
+    };
+
+    const getAirline = (segment) => getField(
+      segment,
+      'airlineName',
+      'airline_name',
+      'airline',
+      'carrier',
+      'operatingCarrier',
+      'name'
+    ) || (Array.isArray(segment.airlines || segment.carriers)
+      ? (segment.airlines || segment.carriers).map((airline) => (
+        typeof airline === 'string' ? airline : airline?.name
+      )).filter(Boolean).join(' • ')
+      : '');
+
+    const getDuration = (offer) => {
+      const value = offer.total_duration ?? offer.duration ?? offer.durationMinutes ?? 0;
+      const numericDuration = Number(value);
+      if (Number.isFinite(numericDuration)) return numericDuration;
+      const parts = String(value).match(/(?:(\d+)\s*(?:h|hr|hour))?\s*(?:(\d+)\s*(?:m|min|minute))?/i);
+      if (!parts || (!parts[1] && !parts[2])) return 0;
+      return Number(parts[1] || 0) * 60 + Number(parts[2] || 0);
+    };
+
+    const getSegmentTime = (segment, field) => {
+      const direct = getField(segment, `${field}Time`, `${field}_time`);
+      if (direct) return direct;
+      const airport = segment?.[`${field}_airport`] || segment?.[`${field}Airport`];
+      return getField(segment, field) || getField(airport, 'time', 'dateTime', 'datetime');
+    };
+
+    const getFlightOffers = (payload) => {
+      const root = payload?.data?.data ?? payload?.data ?? payload;
+      const candidates = [
+        root?.best_flights,
+        root?.bestFlights,
+        root?.other_flights,
+        root?.otherFlights,
+        root?.flightOffers,
+        root?.flight_options,
+        root?.flightOptions,
+        root?.all_flights,
+        root?.itineraries,
+        root?.results,
+        root?.flights,
+        payload?.best_flights,
+        payload?.bestFlights,
+        payload?.other_flights,
+        payload?.otherFlights,
+        payload?.flightOffers,
+        payload?.itineraries,
+        payload?.results,
+        Array.isArray(root) ? root : null
+      ];
+      const offers = candidates.filter(Array.isArray).flat();
+      return [...new Set(offers)].filter((offer) => (
+        offer && typeof offer === 'object' && getPrice(offer) && getSegments(offer).length > 0
+      ));
+    };
 
     if (isValidDate(departureDate) && isValidDate(arrivalDate)) {
       dates.textContent = `${formatDate(departureDate)} — ${formatDate(arrivalDate)}`;
@@ -146,9 +244,9 @@
 
       const renderResults = () => {
         const ordered = [...priceItems].sort((first, second) => (
-          sort.value === 'date'
-            ? first.departureDate.localeCompare(second.departureDate)
-            : Number(first.price) - Number(second.price)
+          sort.value === 'duration'
+            ? first.duration - second.duration
+            : first.price.amount - second.price.amount
         ));
         results.replaceChildren();
         ordered.forEach((item, index) => {
@@ -159,30 +257,59 @@
           top.className = 'flex items-center justify-between gap-3';
           const label = document.createElement('span');
           label.className = 'rounded-full bg-[var(--color-sky)] px-3 py-1 text-xs font-extrabold text-[var(--color-ink-soft)]';
-          label.textContent = index === 0 && sort.value === 'price' ? 'أقل سعر' : 'سعر تقديري';
+          label.textContent = index === 0
+            ? (sort.value === 'duration' ? 'أقصر مدة' : 'أقل سعر')
+            : 'رحلة متاحة';
           const price = document.createElement('strong');
           price.className = 'text-lg font-black text-[var(--color-ink)]';
-          price.textContent = formatPrice.format(Number(item.price));
+          price.textContent = formatPrice(item.price.amount, item.price.currency);
           top.append(label, price);
 
           const route = document.createElement('p');
           route.className = 'mt-5 flex flex-wrap items-center gap-2 font-extrabold';
           setRoute(route);
-          const tripDates = document.createElement('p');
-          tripDates.className = 'mt-2 text-sm font-semibold text-slate-600';
-          tripDates.textContent = `الذهاب: ${formatDate(item.departureDate)}`;
-          const returnTripDate = document.createElement('p');
-          returnTripDate.className = 'mt-1 text-sm font-semibold text-slate-600';
-          returnTripDate.textContent = `العودة: ${formatDate(item.arrivalDate)}`;
+          const airline = document.createElement('p');
+          airline.className = 'mt-2 text-sm font-bold text-[var(--color-mint)]';
+          airline.textContent = item.airlines.join(' • ') || 'شركة الطيران غير متاحة';
+          const segments = document.createElement('div');
+          segments.className = 'mt-4 space-y-3 border-t border-slate-100 pt-3';
+          item.segments.forEach((segment, segmentIndex) => {
+            const segmentCard = document.createElement('div');
+            segmentCard.className = 'rounded-xl bg-slate-50 p-3';
+            const segmentTitle = document.createElement('p');
+            segmentTitle.className = 'text-xs font-extrabold text-slate-500';
+            segmentTitle.textContent = item.segments.length === 2
+              ? (segmentIndex === 0 ? 'رحلة الذهاب' : 'رحلة العودة')
+              : `مقطع الرحلة ${segmentIndex + 1}`;
+            const times = document.createElement('p');
+            times.className = 'mt-1 text-sm font-bold';
+            const departure = getSegmentTime(segment, 'departure');
+            const arrival = getSegmentTime(segment, 'arrival');
+            times.textContent = [departure, arrival].filter(Boolean).join('  ←  ') || 'موعد الرحلة غير متاح';
+            const airports = document.createElement('p');
+            airports.className = 'mt-1 text-xs font-semibold text-slate-600';
+            const departureAirport = getAirportName(segment, 'departure');
+            const arrivalAirport = getAirportName(segment, 'arrival');
+            airports.textContent = [departureAirport, arrivalAirport].filter(Boolean).join('  ←  ');
+            const airlineName = getAirline(segment) || item.airlines.join(' • ');
+            const flightNumber = getField(segment, 'flightNumber', 'flight_number', 'number');
+            const detail = document.createElement('p');
+            detail.className = 'mt-1 text-xs text-slate-500';
+            detail.textContent = [airlineName, flightNumber].filter(Boolean).join(' • ') || 'تفاصيل الناقل غير متاحة';
+            segmentCard.append(segmentTitle, times);
+            if (airports.textContent) segmentCard.append(airports);
+            segmentCard.append(detail);
+            segments.append(segmentCard);
+          });
           const note = document.createElement('p');
           note.className = 'mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500';
-          note.textContent = 'سعر تقريبي للتاريخين — شركة الطيران غير متاحة';
-          card.append(top, route, tripDates, returnTripDate, note);
+          note.textContent = item.duration > 0 ? `المدة الإجمالية: ${item.duration} دقيقة` : 'تحقق من تفاصيل الرحلة لدى جهة الحجز';
+          card.append(top, route, airline, segments, note);
           results.append(card);
         });
       };
 
-      fetch(`${apiBase}/api/flight-price-calendar?${params}`)
+      fetch(`${apiBase}/api/flight-roundtrip?${params}`)
         .then(async (response) => {
           const payload = await response.json();
           if (!response.ok) {
@@ -191,23 +318,23 @@
           return payload;
         })
         .then((payload) => {
-          priceItems = (Array.isArray(payload?.data) ? payload.data : []).filter((item) => (
-            item.price !== null
-            && item.price !== ''
-            && Number.isFinite(Number(item.price))
-            && typeof item.departureDate === 'string'
-            && typeof item.arrivalDate === 'string'
-            && isValidDate(item.departureDate)
-            && isValidDate(item.arrivalDate)
-          ));
+          priceItems = getFlightOffers(payload).map((offer) => {
+            const segments = getSegments(offer);
+            const offerAirlines = Array.isArray(offer.airlines)
+              ? offer.airlines.map((airline) => typeof airline === 'string' ? airline : airline?.name).filter(Boolean)
+              : [];
+            const airlines = [...new Set([...segments.map(getAirline).filter(Boolean), ...offerAirlines])];
+            const duration = getDuration(offer);
+            return { price: getPrice(offer), segments, airlines, duration };
+          });
           if (priceItems.length === 0) {
-            status.textContent = 'لم يعثر مزوّد الخدمة على أسعار لهذا المسار والتواريخ. جرّب تواريخ أخرى.';
-            count.textContent = 'لا توجد أسعار متاحة.';
+            status.textContent = 'لم يعثر مزوّد الخدمة على رحلات بتفاصيل قابلة للعرض لهذا المسار والتاريخين. جرّب تاريخًا آخر.';
+            count.textContent = 'لا توجد رحلات متاحة.';
             return;
           }
-          priceItems.sort((first, second) => Number(first.price) - Number(second.price));
+          priceItems.sort((first, second) => first.price.amount - second.price.amount);
           status.hidden = true;
-          count.textContent = `${priceItems.length} تاريخًا بأسعار تقديرية بالريال السعودي`;
+          count.textContent = `${priceItems.length} رحلة متاحة من ${departureName} إلى ${arrivalName}`;
           sort.disabled = false;
           renderResults();
         })

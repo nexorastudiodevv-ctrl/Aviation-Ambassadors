@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createFlightAutocompleteHandler } from '../api/flight-autocomplete.js';
 import { createFlightPriceCalendarHandler } from '../api/flight-price-calendar.js';
+import { createFlightRoundTripHandler } from '../api/flight-roundtrip.js';
 
 function createResponse(statusCode, body = null) {
   return {
@@ -242,6 +243,74 @@ test('round-trip calendar rejects one-way, invalid dates, and identical airports
     url: `/api/flight-price-calendar?tripType=roundtrip&departureId=CAI&arrivalId=CAI&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
   });
   assert.equal(sameAirport.statusCode, 400);
+  assert.equal(requestCount, 0);
+});
+
+test('round-trip flight search forwards route, dates, and search preferences', async () => {
+  const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
+  const arrivalDate = nextDate(departureDate, 7);
+  let requestedUrl;
+  let requestedHeaders;
+  const providerPayload = {
+    data: {
+      best_flights: [{
+        price: 720,
+        flights: [{ airline: 'Sample Air', departure_time: `${departureDate} 10:00` }]
+      }]
+    }
+  };
+  const handler = createFlightRoundTripHandler({
+    env: testEnvironment,
+    fetchImpl: async (url, options) => {
+      requestedUrl = new URL(url);
+      requestedHeaders = options.headers;
+      return { ok: true, json: async () => providerPayload };
+    }
+  });
+
+  const response = await invoke(handler, {
+    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(requestedUrl.pathname, '/flights/roundtrip-returning');
+  assert.equal(requestedUrl.searchParams.get('departureId'), 'CAI');
+  assert.equal(requestedUrl.searchParams.get('arrivalId'), 'DXB');
+  assert.equal(requestedUrl.searchParams.get('departureDate'), departureDate);
+  assert.equal(requestedUrl.searchParams.get('arrivalDate'), arrivalDate);
+  assert.equal(requestedUrl.searchParams.get('currency'), 'SAR');
+  assert.equal(requestedUrl.searchParams.get('adults'), '1');
+  assert.equal(requestedUrl.searchParams.get('cabinClass'), '1');
+  assert.equal(requestedUrl.searchParams.get('language'), 'en-US');
+  assert.equal(requestedHeaders['x-rapidapi-key'], 'test-secret');
+  assert.deepEqual(response.body, providerPayload);
+});
+
+test('round-trip flight search rejects invalid route and dates before calling provider', async () => {
+  let requestCount = 0;
+  const handler = createFlightRoundTripHandler({
+    env: testEnvironment,
+    fetchImpl: async () => {
+      requestCount += 1;
+      return { ok: true, json: async () => ({ data: [] }) };
+    }
+  });
+  const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
+  const arrivalDate = nextDate(departureDate, 1);
+
+  const sameAirport = await invoke(handler, {
+    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=CAI&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+  });
+  const oneWay = await invoke(handler, {
+    url: `/api/flight-roundtrip?tripType=oneway&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+  });
+  const returnBeforeDeparture = await invoke(handler, {
+    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${arrivalDate}&arrivalDate=${departureDate}`
+  });
+
+  assert.equal(sameAirport.statusCode, 400);
+  assert.equal(oneWay.statusCode, 400);
+  assert.equal(returnBeforeDeparture.statusCode, 400);
   assert.equal(requestCount, 0);
 });
 
