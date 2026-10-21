@@ -695,7 +695,10 @@
           })
           .catch((error) => {
             status.hidden = false;
-            status.textContent = error instanceof Error ? error.message : 'تعذر تحميل الرحلات؛ حاول مرة أخرى لاحقًا.';
+            const message = error instanceof Error ? error.message : '';
+            status.textContent = /could not return full flight details/i.test(message)
+              ? 'تعذر جلب تفاصيل الرحلات كاملة من المزوّد. تحقّق من صلاحية هذا المسار في RapidAPI ثم أعد المحاولة.'
+              : message || 'تعذر تحميل الرحلات؛ حاول مرة أخرى لاحقًا.';
             count.textContent = 'تعذر تحميل النتائج.';
           });
 
