@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>نتائج أسعار الرحلات | سفراء الطيران</title>
+  <meta name="description" content="قارن تواريخ وأسعار الرحلات التقديرية حسب المسار الذي اخترته.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+      --color-ink: #072b43;
+      --color-ink-soft: #0d3f61;
+      --color-sky: #eef6ff;
+      --color-sun: #ffb400;
+      --color-mint: #0ea5a4;
+    }
+    body { font-family: var(--font-sans); }
+    :focus-visible { outline: 3px solid var(--color-sun); outline-offset: 3px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-[var(--color-ink)] antialiased">
+  <header class="bg-[var(--color-ink)] text-white shadow-lg">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+      <a href="../index.html" class="flex items-center gap-2 text-lg font-black sm:text-xl">
+        <span aria-hidden="true" class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-sun)] text-[var(--color-ink)]">✈</span>
+        سفراء الطيران
+      </a>
+      <a href="../index.html#flight-search-heading" class="rounded-full border border-white/30 px-4 py-2 text-sm font-bold transition hover:border-[var(--color-sun)] hover:text-[var(--color-sun)]">تعديل البحث</a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 sm:py-12">
+    <section class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8" aria-labelledby="results-heading">
+      <div class="flex flex-wrap items-start justify-between gap-5">
+        <div>
+          <p class="text-sm font-bold text-[var(--color-mint)]">مقارنة تواريخ وأسعار الرحلات</p>
+          <h1 id="results-heading" class="mt-2 text-2xl font-black sm:text-3xl">نتائج البحث</h1>
+          <p id="route-summary" class="mt-3 flex flex-wrap items-center gap-2 text-base font-bold text-slate-600" aria-live="polite">جارٍ تجهيز تفاصيل الرحلة...</p>
+        </div>
+        <div class="min-w-48 rounded-2xl bg-[var(--color-sky)] px-4 py-3 text-sm">
+          <p class="font-bold text-slate-500">تواريخ الرحلة المختارة</p>
+          <p id="selected-dates" class="mt-1 font-extrabold">—</p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950" role="note">
+        <span aria-hidden="true" class="text-lg">ⓘ</span>
+        <p><strong>معلومة مهمة:</strong> النتائج الحالية تقويم أسعار تقديري للتواريخ، وليست قائمة رحلات مؤكدة؛ لا تتوفر أسماء شركات الطيران أو أوقات الرحلات في بيانات مزوّد الخدمة الحالية.</p>
+      </div>
+
+      <div class="mt-7 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+        <div>
+          <h2 class="text-xl font-black">الأسعار حسب تاريخ المغادرة</h2>
+          <p id="results-count" class="mt-1 text-sm text-slate-500" aria-live="polite">جارٍ تحميل الأسعار...</p>
+        </div>
+        <label class="flex items-center gap-2 text-sm font-bold">
+          ترتيب النتائج
+          <select id="sort-results" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-[var(--color-ink)]" disabled>
+            <option value="price">الأقل سعرًا</option>
+            <option value="date">تاريخ المغادرة</option>
+          </select>
+        </label>
+      </div>
+
+      <p id="results-status" class="py-10 text-center text-sm font-semibold text-slate-600" role="status" aria-live="polite">جارٍ تحميل تقويم الأسعار...</p>
+      <div id="flight-price-results" class="grid gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite"></div>
+      <p class="mt-6 rounded-xl bg-slate-100 p-4 text-xs leading-6 text-slate-600">الأسعار تقريبية وقابلة للتغيير حسب التوفر وشروط الحجز. مدة الإقامة في التواريخ البديلة مماثلة لمدة الإقامة التي اخترتها. تحقّق من السعر النهائي لدى شركة الطيران أو جهة الحجز.</p>
+    </section>
+  </main>
+
+  <script src="../admin-panel/firebase-config.js"></script>
+  <script>
+    const query = new URLSearchParams(window.location.search);
+    const departureId = query.get('departureId') || '';
+    const arrivalId = query.get('arrivalId') || '';
+    const departureDate = query.get('departureDate') || '';
+    const arrivalDate = query.get('arrivalDate') || '';
+    const departureName = query.get('departureName') || departureId;
+    const arrivalName = query.get('arrivalName') || arrivalId;
+    const summary = document.getElementById('route-summary');
+    const dates = document.getElementById('selected-dates');
+    const status = document.getElementById('results-status');
+    const count = document.getElementById('results-count');
+    const results = document.getElementById('flight-price-results');
+    const sort = document.getElementById('sort-results');
+
+    const isValidDate = (value) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const date = new Date(`${value}T00:00:00.000Z`);
+      return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+    };
+    const setRoute = (element) => {
+      const origin = document.createElement('bdi');
+      origin.textContent = departureName;
+      const direction = document.createElement('span');
+      direction.textContent = '←';
+      direction.setAttribute('aria-hidden', 'true');
+      const destination = document.createElement('bdi');
+      destination.textContent = arrivalName;
+      element.replaceChildren(origin, direction, destination);
+    };
+    const formatDate = (value) => new Intl.DateTimeFormat('ar', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC'
+    }).format(new Date(`${value}T00:00:00.000Z`));
+    const formatPrice = new Intl.NumberFormat('ar-SA', {
+      style: 'currency',
+      currency: 'SAR',
+      maximumFractionDigits: 0
+    });
+
+    if (isValidDate(departureDate) && isValidDate(arrivalDate)) {
+      dates.textContent = `${formatDate(departureDate)} — ${formatDate(arrivalDate)}`;
+    }
+    setRoute(summary);
+
+    const requiredValues = [departureId, arrivalId, departureDate, arrivalDate];
+    if (
+      requiredValues.some((value) => !value)
+      || !isValidDate(departureDate)
+      || !isValidDate(arrivalDate)
+      || query.get('tripType') !== 'roundtrip'
+    ) {
+      status.textContent = 'بيانات البحث غير مكتملة. عُد إلى نموذج البحث واختر مطاري المغادرة والوصول والتاريخين.';
+      count.textContent = 'لا توجد بيانات بحث صالحة.';
+    } else {
+      const params = new URLSearchParams({
+        tripType: 'roundtrip',
+        departureId,
+        arrivalId,
+        departureDate,
+        arrivalDate
+      });
+      const apiBase = window.FLIGHT_API_URL
+        ? new URL(window.FLIGHT_API_URL).origin
+        : window.location.origin;
+      let priceItems = [];
+
+      const renderResults = () => {
+        const ordered = [...priceItems].sort((first, second) => (
+          sort.value === 'date'
+            ? first.departureDate.localeCompare(second.departureDate)
+            : Number(first.price) - Number(second.price)
+        ));
+        results.replaceChildren();
+        ordered.forEach((item, index) => {
+          const card = document.createElement('article');
+          card.className = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--color-mint)] hover:shadow-md';
+
+          const top = document.createElement('div');
+          top.className = 'flex items-center justify-between gap-3';
+          const label = document.createElement('span');
+          label.className = 'rounded-full bg-[var(--color-sky)] px-3 py-1 text-xs font-extrabold text-[var(--color-ink-soft)]';
+          label.textContent = index === 0 && sort.value === 'price' ? 'أقل سعر' : 'سعر تقديري';
+          const price = document.createElement('strong');
+          price.className = 'text-lg font-black text-[var(--color-ink)]';
+          price.textContent = formatPrice.format(Number(item.price));
+          top.append(label, price);
+
+          const route = document.createElement('p');
+          route.className = 'mt-5 flex flex-wrap items-center gap-2 font-extrabold';
+          setRoute(route);
+          const tripDates = document.createElement('p');
+          tripDates.className = 'mt-2 text-sm font-semibold text-slate-600';
+          tripDates.textContent = `الذهاب: ${formatDate(item.departureDate)}`;
+          const returnTripDate = document.createElement('p');
+          returnTripDate.className = 'mt-1 text-sm font-semibold text-slate-600';
+          returnTripDate.textContent = `العودة: ${formatDate(item.arrivalDate)}`;
+          const note = document.createElement('p');
+          note.className = 'mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500';
+          note.textContent = 'سعر تقريبي للتاريخين — شركة الطيران غير متاحة';
+          card.append(top, route, tripDates, returnTripDate, note);
+          results.append(card);
+        });
+      };
+
+      fetch(`${apiBase}/api/flight-price-calendar?${params}`)
+        .then(async (response) => {
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.message || 'تعذر تحميل أسعار الرحلات.');
+          }
+          return payload;
+        })
+        .then((payload) => {
+          priceItems = (Array.isArray(payload?.data) ? payload.data : []).filter((item) => (
+            item.price !== null
+            && item.price !== ''
+            && Number.isFinite(Number(item.price))
+            && typeof item.departureDate === 'string'
+            && typeof item.arrivalDate === 'string'
+            && isValidDate(item.departureDate)
+            && isValidDate(item.arrivalDate)
+          ));
+          if (priceItems.length === 0) {
+            status.textContent = 'لم يعثر مزوّد الخدمة على أسعار لهذا المسار والتواريخ. جرّب تواريخ أخرى.';
+            count.textContent = 'لا توجد أسعار متاحة.';
+            return;
+          }
+          priceItems.sort((first, second) => Number(first.price) - Number(second.price));
+          status.hidden = true;
+          count.textContent = `${priceItems.length} تاريخًا بأسعار تقديرية بالريال السعودي`;
+          sort.disabled = false;
+          renderResults();
+        })
+        .catch((error) => {
+          status.textContent = error instanceof Error
+            ? error.message
+            : 'تعذر تحميل الأسعار؛ حاول مرة أخرى لاحقًا.';
+          count.textContent = 'تعذر تحميل النتائج.';
+        });
+
+      sort.addEventListener('change', renderResults);
+    }
+  </script>
+</body>
+</html>
