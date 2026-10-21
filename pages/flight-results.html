@@ -204,18 +204,30 @@
       if (airport && typeof airport === 'object') {
         return airport.name || airport.code || airport.id || '';
       }
-      return getField(segment, `${field}Airport`, `${field}_airport`, `${field}Name`, `${field}_name`);
+      return getField(
+        segment,
+        `${field}AirportName`,
+        `${field}_airport_name`,
+        `${field}AirportCode`,
+        `${field}_airport_code`,
+        `${field}Airport`,
+        `${field}_airport`,
+        `${field}Name`,
+        `${field}_name`
+      );
     };
 
-    const getAirline = (segment) => getField(
-      segment,
-      'airlineName',
-      'airline_name',
-      'airline',
-      'carrier',
-      'operatingCarrier',
-      'name'
-    ) || (Array.isArray(segment.airlines || segment.carriers)
+    const getAirline = (segment) => segment?.airline?.airlineName
+      || segment?.airline?.name
+      || getField(
+        segment,
+        'airlineName',
+        'airline_name',
+        'airline',
+        'carrier',
+        'operatingCarrier',
+        'name'
+      ) || (Array.isArray(segment.airlines || segment.carriers)
       ? (segment.airlines || segment.carriers).map((airline) => (
         typeof airline === 'string' ? airline : airline?.name
       )).filter(Boolean).join(' • ')
@@ -257,6 +269,7 @@
         segments[0]?.airlineCode,
         segments[0]?.airline_code,
         segments[0]?.carrierCode,
+        segments[0]?.airline?.airlineCode,
         segments[0]?.airline?.code,
         segments[0]?.carrier?.code
       ];
@@ -281,6 +294,8 @@
     const getFlightOffers = (payload) => {
       const root = payload?.data?.data ?? payload?.data ?? payload;
       const candidates = [
+        root?.topFlights,
+        root?.top_flights,
         root?.best_flights,
         root?.bestFlights,
         root?.other_flights,
@@ -292,6 +307,8 @@
         root?.itineraries,
         root?.results,
         root?.flights,
+        payload?.topFlights,
+        payload?.top_flights,
         payload?.best_flights,
         payload?.bestFlights,
         payload?.other_flights,
@@ -666,33 +683,90 @@
         };
 
         const calendarParams = new URLSearchParams(params);
-        const flightRequest = fetchJson(`${apiBase}/api/flight-roundtrip?${params}`)
-          .then((payload) => {
-            priceItems = getFlightOffers(payload).map((offer) => {
-              const segments = getSegments(offer);
-              const offerAirlines = Array.isArray(offer.airlines)
-                ? offer.airlines.map((airline) => typeof airline === 'string' ? airline : airline?.name).filter(Boolean)
-                : [];
-              const airlines = [...new Set([...segments.map(getAirline).filter(Boolean), ...offerAirlines])];
-              const segmentDurations = segments.map(getDuration).filter((duration) => duration > 0);
-              const duration = getDuration(offer) || segmentDurations.reduce((total, value) => total + value, 0);
+        const flightRequest = (async () => {
+          const outboundPayload = await fetchJson(`${apiBase}/api/flight-roundtrip-outbound?${params}`);
+          const outboundFlights = getFlightOffers(outboundPayload);
+          const uniqueFlights = new Map();
+          outboundFlights.forEach((offer) => {
+            if (typeof offer.returningToken === 'string' && offer.returningToken) {
+              uniqueFlights.set(offer.returningToken, offer);
+            }
+          });
+          const tokenizedFlights = [...uniqueFlights.values()].slice(0, 8);
+          if (tokenizedFlights.length === 0) {
+            throw new Error('لم يُرجع مزوّد الخدمة خيارات ذهاب يمكن استخدامها لجلب رحلات العودة.');
+          }
+
+          status.hidden = false;
+          status.textContent = 'تم العثور على رحلات الذهاب؛ جارٍ جلب خيارات العودة والأسعار الإجمالية…';
+          const returningResults = await Promise.allSettled(tokenizedFlights.map(async (outbound) => {
+            const returningParams = new URLSearchParams({
+              returningToken: outbound.returningToken,
+              arrivalDate,
+              language: 'en-US'
+            });
+            const returningPayload = await fetchJson(
+              `${apiBase}/api/flight-roundtrip?${returningParams}`
+            );
+            return { outbound, returningFlights: getFlightOffers(returningPayload) };
+          }));
+
+          priceItems = returningResults.flatMap((result) => {
+            if (result.status !== 'fulfilled') return [];
+            const { outbound, returningFlights } = result.value;
+            const outboundSegments = getSegments(outbound);
+            return returningFlights.map((returning) => {
+              const returningSegments = getSegments(returning);
+              const segments = [...outboundSegments, ...returningSegments];
+              const airlineNames = (offer) => {
+                const values = [
+                  ...(Array.isArray(offer.airlineNames) ? offer.airlineNames : []),
+                  ...(Array.isArray(offer.airlines) ? offer.airlines : []),
+                  ...(Array.isArray(offer.airline) ? offer.airline : [])
+                ];
+                return values.map((airline) => (
+                  typeof airline === 'string'
+                    ? airline
+                    : airline?.airlineName || airline?.name
+                )).filter(Boolean);
+              };
+              const airlines = [...new Set([
+                ...segments.map(getAirline).filter(Boolean),
+                ...airlineNames(outbound),
+                ...airlineNames(returning)
+              ])];
+              const price = getPrice(returning) || getPrice(outbound);
+              if (!price || segments.length === 0) return null;
               return {
-                price: getPrice(offer),
+                price,
                 segments,
                 airlines,
-                duration,
-                stops: getStopCount(offer, segments),
-                airlineCode: getAirlineCode(offer, segments),
-                logo: getLogo(offer, segments),
-                departureHour: getDepartureHour(segments)
+                duration: getDuration(outbound) + getDuration(returning),
+                stops: getStopCount(outbound, outboundSegments)
+                  + getStopCount(returning, returningSegments),
+                airlineCode: getAirlineCode(outbound, outboundSegments)
+                  || getAirlineCode(returning, returningSegments),
+                logo: getLogo(outbound, outboundSegments) || getLogo(returning, returningSegments),
+                departureHour: getDepartureHour(outboundSegments)
               };
-            }).filter((item) => item.price);
-            if (priceItems.length === 0) throw new Error('لم يعثر مزوّد الخدمة على رحلات قابلة للعرض لهذا المسار والتاريخين.');
-            renderAirlineFilters();
-            renderStopFilters();
-            setupPriceRange();
-            renderResults();
-          })
+            }).filter(Boolean);
+          });
+          if (priceItems.length === 0) {
+            const failedRequest = returningResults.find((result) => result.status === 'rejected');
+            throw failedRequest?.reason instanceof Error
+              ? failedRequest.reason
+              : new Error('لم يعثر مزوّد الخدمة على رحلات عودة قابلة للعرض لهذا المسار والتاريخ.');
+          }
+          const failedCount = returningResults.filter((result) => result.status === 'rejected').length;
+          renderAirlineFilters();
+          renderStopFilters();
+          setupPriceRange();
+          renderResults();
+          if (failedCount > 0) {
+            status.hidden = false;
+            status.textContent = `عُرضت الرحلات المتاحة؛ تعذّر تحميل خيارات العودة لـ ${failedCount} من رحلات الذهاب.`;
+          }
+        })()
           .catch((error) => {
             status.hidden = false;
             const message = error instanceof Error ? error.message : '';

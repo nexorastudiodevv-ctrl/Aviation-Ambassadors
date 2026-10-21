@@ -3,6 +3,7 @@ import test from 'node:test';
 import { createFlightAutocompleteHandler } from '../api/flight-autocomplete.js';
 import { createFlightPriceCalendarHandler } from '../api/flight-price-calendar.js';
 import { createFlightRoundTripHandler } from '../api/flight-roundtrip.js';
+import { createFlightRoundTripOutboundHandler } from '../api/flight-roundtrip-outbound.js';
 
 function createResponse(statusCode, body = null) {
   return {
@@ -246,7 +247,7 @@ test('round-trip calendar rejects one-way, invalid dates, and identical airports
   assert.equal(requestCount, 0);
 });
 
-test('round-trip flight search forwards route, dates, and search preferences', async () => {
+test('round-trip outbound search gets returning tokens from the provider', async () => {
   const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
   const arrivalDate = nextDate(departureDate, 7);
   let requestedUrl;
@@ -259,7 +260,7 @@ test('round-trip flight search forwards route, dates, and search preferences', a
       }]
     }
   };
-  const handler = createFlightRoundTripHandler({
+  const handler = createFlightRoundTripOutboundHandler({
     env: testEnvironment,
     fetchImpl: async (url, options) => {
       requestedUrl = new URL(url);
@@ -269,15 +270,15 @@ test('round-trip flight search forwards route, dates, and search preferences', a
   });
 
   const response = await invoke(handler, {
-    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+    url: `/api/flight-roundtrip-outbound?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(requestedUrl.pathname, '/flights/roundtrip-returning');
+  assert.equal(requestedUrl.pathname, '/flights/roundtrip');
   assert.equal(requestedUrl.searchParams.get('departureId'), 'CAI');
   assert.equal(requestedUrl.searchParams.get('arrivalId'), 'DXB');
   assert.equal(requestedUrl.searchParams.get('departureDate'), departureDate);
-  assert.equal(requestedUrl.searchParams.get('arrivalDate'), arrivalDate);
+  assert.equal(requestedUrl.searchParams.has('arrivalDate'), false);
   assert.equal(requestedUrl.searchParams.get('currency'), 'SAR');
   assert.equal(requestedUrl.searchParams.get('adults'), '1');
   assert.equal(requestedUrl.searchParams.get('cabinClass'), '1');
@@ -286,9 +287,33 @@ test('round-trip flight search forwards route, dates, and search preferences', a
   assert.deepEqual(response.body, providerPayload);
 });
 
-test('round-trip flight search rejects invalid route and dates before calling provider', async () => {
-  let requestCount = 0;
+test('round-trip returning search passes the token and return date to provider', async () => {
+  const arrivalDate = nextDate(new Date().toISOString().slice(0, 10), 17);
+  const returningToken = 'valid-returning-token';
+  let requestedUrl;
   const handler = createFlightRoundTripHandler({
+    env: testEnvironment,
+    fetchImpl: async (url) => {
+      requestedUrl = new URL(url);
+      return { ok: true, json: async () => ({ data: { otherFlights: [] } }) };
+    }
+  });
+
+  const response = await invoke(handler, {
+    url: `/api/flight-roundtrip?returningToken=${returningToken}&arrivalDate=${arrivalDate}`
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(requestedUrl.pathname, '/flights/roundtrip-returning');
+  assert.equal(requestedUrl.searchParams.get('returningToken'), returningToken);
+  assert.equal(requestedUrl.searchParams.get('arrivalDate'), arrivalDate);
+  assert.equal(requestedUrl.searchParams.get('currency'), 'SAR');
+  assert.equal(requestedUrl.searchParams.get('language'), 'en-US');
+});
+
+test('round-trip outbound and returning searches reject invalid parameters before calling provider', async () => {
+  let requestCount = 0;
+  const handler = createFlightRoundTripOutboundHandler({
     env: testEnvironment,
     fetchImpl: async () => {
       requestCount += 1;
@@ -299,18 +324,28 @@ test('round-trip flight search rejects invalid route and dates before calling pr
   const arrivalDate = nextDate(departureDate, 1);
 
   const sameAirport = await invoke(handler, {
-    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=CAI&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+    url: `/api/flight-roundtrip-outbound?tripType=roundtrip&departureId=CAI&arrivalId=CAI&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
   });
   const oneWay = await invoke(handler, {
-    url: `/api/flight-roundtrip?tripType=oneway&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+    url: `/api/flight-roundtrip-outbound?tripType=oneway&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
   });
   const returnBeforeDeparture = await invoke(handler, {
-    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${arrivalDate}&arrivalDate=${departureDate}`
+    url: `/api/flight-roundtrip-outbound?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${arrivalDate}&arrivalDate=${departureDate}`
+  });
+  const missingToken = await invoke(createFlightRoundTripHandler({
+    env: testEnvironment,
+    fetchImpl: async () => {
+      requestCount += 1;
+      return { ok: true, json: async () => ({ data: [] }) };
+    }
+  }), {
+    url: `/api/flight-roundtrip?arrivalDate=${arrivalDate}`
   });
 
   assert.equal(sameAirport.statusCode, 400);
   assert.equal(oneWay.statusCode, 400);
   assert.equal(returnBeforeDeparture.statusCode, 400);
+  assert.equal(missingToken.statusCode, 400);
   assert.equal(requestCount, 0);
 });
 
@@ -340,12 +375,33 @@ test('provider rejection messages are shown without exposing credentials', async
   const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
   const arrivalDate = nextDate(departureDate, 7);
   const response = await invoke(handler, {
-    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+    url: `/api/flight-roundtrip?returningToken=token&arrivalDate=${arrivalDate}`
   });
 
   assert.equal(response.statusCode, 422);
   assert.equal(response.body.message, 'Errors: invalid_parameter: arrivalDate: Invalid value for [redacted]');
   assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
+});
+
+test('provider field errors are shown when returned as an object', async () => {
+  const handler = createFlightRoundTripHandler({
+    env: testEnvironment,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        status: false,
+        message: 'Errors',
+        errors: { returningToken: 'The returningToken is invalid' }
+      })
+    })
+  });
+  const arrivalDate = nextDate(new Date().toISOString().slice(0, 10), 17);
+  const response = await invoke(handler, {
+    url: `/api/flight-roundtrip?returningToken=token&arrivalDate=${arrivalDate}`
+  });
+
+  assert.equal(response.statusCode, 422);
+  assert.equal(response.body.message, 'Errors: returningToken: The returningToken is invalid');
 });
 
 test('generic provider errors explain that full flight details are unavailable', async () => {
@@ -359,7 +415,7 @@ test('generic provider errors explain that full flight details are unavailable',
   const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
   const arrivalDate = nextDate(departureDate, 7);
   const response = await invoke(handler, {
-    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+    url: `/api/flight-roundtrip?returningToken=token&arrivalDate=${arrivalDate}`
   });
 
   assert.equal(response.statusCode, 422);
