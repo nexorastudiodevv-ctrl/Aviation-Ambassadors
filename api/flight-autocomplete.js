@@ -164,7 +164,7 @@ const ARAB_COUNTRY_NAMES = [
 function isInArabCountry(place) {
   const location = `${place?.info?.shortName || ''} ${place?.info?.description || ''}`;
   return ARAB_COUNTRY_NAMES.some((country) => {
-    const expression = new RegExp(`(?:,|[-–—])\\s*${country.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|$)`, 'i');
+    const expression = new RegExp(`\\b${country.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
     return expression.test(location);
   });
 }

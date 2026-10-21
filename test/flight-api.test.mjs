@@ -166,6 +166,7 @@ test('autocomplete keeps only Arab-country places', async () => {
           { info: { shortName: 'Cairo, Egypt' }, nearbyAirports: [] },
           { info: { shortName: 'Dubai - United Arab Emirates' }, nearbyAirports: [] },
           { info: { shortName: 'Manama, Bahrain' }, nearbyAirports: [] },
+          { info: { shortName: 'Riyadh', description: 'Capital of Saudi Arabia' }, nearbyAirports: [] },
           { info: { shortName: 'London, United Kingdom' }, nearbyAirports: [] }
         ],
         status: true
@@ -178,7 +179,7 @@ test('autocomplete keeps only Arab-country places', async () => {
   assert.equal(response.statusCode, 200);
   assert.deepEqual(
     response.body.data.map((place) => place.info.shortName),
-    ['Cairo, Egypt', 'Dubai - United Arab Emirates', 'Manama, Bahrain']
+    ['Cairo, Egypt', 'Dubai - United Arab Emirates', 'Manama, Bahrain', 'Riyadh']
   );
 });
 
