@@ -26,52 +26,96 @@
 </head>
 <body class="min-h-screen bg-slate-50 text-[var(--color-ink)] antialiased">
   <header class="bg-[var(--color-ink)] text-white shadow-lg">
-    <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3">
       <a href="../index.html" class="flex items-center gap-2 text-lg font-black sm:text-xl">
         <span aria-hidden="true" class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-sun)] text-[var(--color-ink)]">✈</span>
         سفراء الطيران
       </a>
-      <a href="../index.html#flight-search-heading" class="rounded-full border border-white/30 px-4 py-2 text-sm font-bold transition hover:border-[var(--color-sun)] hover:text-[var(--color-sun)]">تعديل البحث</a>
+      <div class="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-sm sm:flex-initial">
+        <p id="route-summary" class="flex flex-wrap items-center gap-2 font-extrabold" aria-live="polite"></p>
+        <span aria-hidden="true" class="hidden h-5 border-r border-white/20 sm:block"></span>
+        <p id="selected-dates" class="text-xs text-sky-100"></p>
+        <span aria-hidden="true" class="hidden h-5 border-r border-white/20 sm:block"></span>
+        <span class="text-xs text-sky-100">مسافر واحد • سياحية</span>
+        <span class="rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-black">SAR</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="../index.html#flight-search-heading" class="rounded-full border border-white/30 px-4 py-2 text-sm font-bold transition hover:border-[var(--color-sun)] hover:text-[var(--color-sun)]">تعديل البحث</a>
+        <button id="toggle-filters" type="button" class="rounded-xl bg-[var(--color-ink-soft)] px-3 py-2 text-sm font-bold lg:hidden" aria-expanded="false" aria-controls="sidebar-filters">الفلاتر</button>
+      </div>
     </div>
   </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-8 sm:py-12">
-    <section class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8" aria-labelledby="results-heading">
-      <div class="flex flex-wrap items-start justify-between gap-5">
-        <div>
-          <p class="text-sm font-bold text-[var(--color-mint)]">رحلات الذهاب والعودة</p>
-          <h1 id="results-heading" class="mt-2 text-2xl font-black sm:text-3xl">نتائج البحث</h1>
-          <p id="route-summary" class="mt-3 flex flex-wrap items-center gap-2 text-base font-bold text-slate-600" aria-live="polite">جارٍ تجهيز تفاصيل الرحلة...</p>
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-4">
+      <aside id="sidebar-filters" class="hidden lg:col-span-1 lg:block" aria-label="تصفية نتائج الرحلات">
+        <div class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <h2 class="text-lg font-black">تصفية النتائج</h2>
+            <button id="reset-filters" type="button" class="text-xs font-bold text-[var(--color-ink-soft)] underline">إعادة ضبط</button>
+          </div>
+          <fieldset>
+            <legend class="mb-3 text-sm font-extrabold">عدد التوقفات</legend>
+            <div id="stop-filters" class="space-y-2 text-sm"></div>
+          </fieldset>
+          <fieldset class="border-t border-slate-100 pt-4">
+            <legend class="mb-3 text-sm font-extrabold">شركات الطيران</legend>
+            <div id="airline-filters" class="space-y-2 text-sm">
+              <p class="text-xs text-slate-500">ستظهر الشركات المتاحة بعد تحميل النتائج.</p>
+            </div>
+          </fieldset>
+          <div class="border-t border-slate-100 pt-4">
+            <div class="mb-2 flex items-center justify-between gap-2">
+              <label for="price-range" class="text-sm font-extrabold">أقصى سعر</label>
+              <output id="price-limit-label" for="price-range" class="text-sm font-black text-emerald-700">—</output>
+            </div>
+            <input id="price-range" type="range" min="0" max="0" value="0" class="w-full accent-[var(--color-mint)]" disabled>
+            <div class="mt-1 flex justify-between text-xs text-slate-400">
+              <span id="min-price-label">—</span>
+              <span id="max-price-label">—</span>
+            </div>
+          </div>
+          <fieldset class="border-t border-slate-100 pt-4">
+            <legend class="mb-3 text-sm font-extrabold">وقت إقلاع الذهاب</legend>
+            <div id="time-filters" class="grid grid-cols-2 gap-2 text-xs">
+              <button type="button" data-time="all" class="rounded-xl border border-[var(--color-ink)] bg-sky-50 p-2 font-bold" aria-pressed="true">كل الأوقات</button>
+              <button type="button" data-time="morning" class="rounded-xl border border-slate-200 p-2 font-semibold" aria-pressed="false">صباحًا 06–12</button>
+              <button type="button" data-time="afternoon" class="rounded-xl border border-slate-200 p-2 font-semibold" aria-pressed="false">ظهرًا 12–18</button>
+              <button type="button" data-time="evening" class="rounded-xl border border-slate-200 p-2 font-semibold" aria-pressed="false">مساءً 18–24</button>
+              <button type="button" data-time="overnight" class="col-span-2 rounded-xl border border-slate-200 p-2 font-semibold" aria-pressed="false">ليلًا 00–06</button>
+            </div>
+          </fieldset>
         </div>
-        <div class="min-w-48 rounded-2xl bg-[var(--color-sky)] px-4 py-3 text-sm">
-          <p class="font-bold text-slate-500">تواريخ الرحلة المختارة</p>
-          <p id="selected-dates" class="mt-1 font-extrabold">—</p>
+      </aside>
+
+      <section class="space-y-5 lg:col-span-3" aria-labelledby="results-heading">
+        <div class="rounded-2xl border border-blue-900 bg-gradient-to-l from-blue-950 to-indigo-900 p-5 text-white shadow-lg">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 id="results-heading" class="text-lg font-black">تقويم أرخص أسعار الرحلات</h1>
+              <p class="mt-1 text-xs text-blue-100">أسعار تقريبية لرحلات ذهاب وعودة بالريال السعودي</p>
+            </div>
+            <p id="best-calendar-price" class="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-xs font-extrabold text-emerald-200">جارٍ تحميل التقويم...</p>
+          </div>
+          <div id="calendar-strip" class="flex gap-3 overflow-x-auto pb-2 text-center" aria-label="تواريخ وأسعار بديلة"></div>
+          <p id="calendar-status" class="text-xs text-blue-100" role="status" aria-live="polite"></p>
         </div>
-      </div>
 
-      <div class="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950" role="note">
-        <span aria-hidden="true" class="text-lg">ⓘ</span>
-        <p><strong>تنبيه:</strong> الأسعار والتوفر تقديرية وقد تتغير لدى شركة الطيران أو جهة الحجز. تحقق من التفاصيل النهائية قبل الدفع.</p>
-      </div>
-
-      <div class="mt-7 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
-        <div>
-          <h2 class="text-xl font-black">الرحلات المتاحة</h2>
-          <p id="results-count" class="mt-1 text-sm text-slate-500" aria-live="polite">جارٍ تحميل الرحلات...</p>
+        <div class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p id="results-count" class="text-sm font-bold text-slate-700" aria-live="polite">جارٍ تحميل الرحلات...</p>
+          <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+            <span class="px-2 font-bold text-slate-500">الترتيب:</span>
+            <button type="button" data-sort="price" aria-pressed="true" class="rounded-lg bg-white px-3 py-2 font-extrabold text-[var(--color-ink-soft)] shadow-sm ring-1 ring-slate-200">الأرخص سعرًا</button>
+            <button type="button" data-sort="duration" aria-pressed="false" class="rounded-lg px-3 py-2 font-bold text-slate-600 hover:bg-slate-100">الأسرع مدة</button>
+            <button type="button" data-sort="best" aria-pressed="false" class="rounded-lg px-3 py-2 font-bold text-slate-600 hover:bg-slate-100">الأفضل</button>
+          </div>
         </div>
-        <label class="flex items-center gap-2 text-sm font-bold">
-          ترتيب النتائج
-          <select id="sort-results" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-[var(--color-ink)]" disabled>
-            <option value="price">الأقل سعرًا</option>
-            <option value="duration">الأقصر مدة</option>
-          </select>
-        </label>
-      </div>
 
-      <p id="results-status" class="py-10 text-center text-sm font-semibold text-slate-600" role="status" aria-live="polite">جارٍ البحث عن الرحلات...</p>
-      <div id="flight-price-results" class="grid gap-4 pt-4 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite"></div>
-      <p class="mt-6 rounded-xl bg-slate-100 p-4 text-xs leading-6 text-slate-600">الأسعار ومعلومات الرحلات من مزوّد البحث وقد تتغير أو تختلف حسب التوفر وشروط الحجز. تحقق من السعر والتفاصيل النهائية مباشرة لدى الناقل أو جهة الحجز.</p>
-    </section>
+        <p id="results-status" class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-600" role="status" aria-live="polite">جارٍ البحث عن الرحلات...</p>
+        <div id="flight-price-results" class="space-y-4" aria-live="polite"></div>
+        <p class="rounded-xl bg-slate-100 p-4 text-xs leading-6 text-slate-600">الأسعار ومعلومات الرحلات من مزوّد البحث وقد تتغير أو تختلف حسب التوفر وشروط الحجز. تحقق من السعر والتفاصيل النهائية مباشرة لدى الناقل أو جهة الحجز.</p>
+      </section>
+    </div>
   </main>
 
   <script src="../admin-panel/firebase-config.js"></script>
@@ -88,8 +132,15 @@
     const status = document.getElementById('results-status');
     const count = document.getElementById('results-count');
     const results = document.getElementById('flight-price-results');
-    const sort = document.getElementById('sort-results');
-
+    const sortButtons = document.querySelectorAll('[data-sort]');
+    const filterSidebar = document.getElementById('sidebar-filters');
+    const filterToggle = document.getElementById('toggle-filters');
+    const airlineFilters = document.getElementById('airline-filters');
+    const stopFilters = document.getElementById('stop-filters');
+    const priceRange = document.getElementById('price-range');
+    const timeFilters = document.getElementById('time-filters');
+    const calendarStrip = document.getElementById('calendar-strip');
+    const calendarStatus = document.getElementById('calendar-status');
     const isValidDate = (value) => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
       const date = new Date(`${value}T00:00:00.000Z`);
@@ -186,6 +237,47 @@
       return getField(segment, field) || getField(airport, 'time', 'dateTime', 'datetime');
     };
 
+    const getStopCount = (offer, segments) => {
+      const value = offer.stopsCount ?? offer.stop_count ?? offer.stops;
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      if (typeof value === 'string') {
+        if (/direct|nonstop|no stops/i.test(value)) return 0;
+        const count = Number(value.match(/\d+/)?.[0]);
+        if (Number.isFinite(count)) return count;
+      }
+      if (Array.isArray(value)) return value.length;
+      return segments.length === 2 ? 0 : Math.max(0, Math.ceil(segments.length / 2) - 1);
+    };
+
+    const getAirlineCode = (offer, segments) => {
+      const candidates = [
+        offer.airlineCode,
+        offer.airline_code,
+        offer.carrierCode,
+        segments[0]?.airlineCode,
+        segments[0]?.airline_code,
+        segments[0]?.carrierCode,
+        segments[0]?.airline?.code,
+        segments[0]?.carrier?.code
+      ];
+      return candidates.find((value) => typeof value === 'string' && value.trim()) || '';
+    };
+
+    const getLogo = (offer, segments) => {
+      const logo = offer.airlineLogo
+        || offer.airline_logo
+        || segments[0]?.airlineLogo
+        || segments[0]?.airline_logo
+        || segments[0]?.airline?.logo;
+      return typeof logo === 'string' && /^https:\/\//i.test(logo) ? logo : '';
+    };
+
+    const getDepartureHour = (segments) => {
+      const time = getSegmentTime(segments[0] || {}, 'departure');
+      const match = time.match(/(?:T|\s)(\d{1,2}):\d{2}/) || time.match(/^(\d{1,2}):\d{2}/);
+      return match ? Number(match[1]) : null;
+    };
+
     const getFlightOffers = (payload) => {
       const root = payload?.data?.data ?? payload?.data ?? payload;
       const candidates = [
@@ -241,111 +333,381 @@
         ? new URL(window.FLIGHT_API_URL).origin
         : window.location.origin;
       let priceItems = [];
+      let currentSort = 'price';
+      let selectedTime = 'all';
+      let maxPrice = Number.POSITIVE_INFINITY;
+
+      const formatDuration = (minutes) => {
+        if (!minutes) return 'المدة غير متاحة';
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+        return hours ? `${hours} س ${remainingMinutes} د` : `${remainingMinutes} د`;
+      };
+
+      const renderAirlineFilters = () => {
+        airlineFilters.replaceChildren();
+        const airlines = [...new Set(priceItems.flatMap((item) => item.airlines))].sort();
+        if (airlines.length === 0) {
+          airlineFilters.textContent = 'لا تتوفر بيانات شركات الطيران للترشيح.';
+          return;
+        }
+        airlines.forEach((airline, index) => {
+          const label = document.createElement('label');
+          label.className = 'flex cursor-pointer items-center justify-between gap-2 rounded-lg p-2 text-xs hover:bg-slate-50';
+          const nameWrap = document.createElement('span');
+          nameWrap.className = 'flex min-w-0 items-center gap-2';
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = true;
+          input.value = airline;
+          input.dataset.airlineFilter = 'true';
+          input.className = 'h-4 w-4 accent-[var(--color-ink-soft)]';
+          const name = document.createElement('span');
+          name.className = 'truncate font-semibold';
+          name.textContent = airline;
+          nameWrap.append(input, name);
+          const code = document.createElement('span');
+          code.className = 'text-slate-400';
+          code.textContent = priceItems.find((item) => item.airlines.includes(airline))?.airlineCode || '';
+          label.append(nameWrap, code);
+          airlineFilters.append(label);
+        });
+      };
+
+      const renderStopFilters = () => {
+        stopFilters.replaceChildren();
+        const stopCounts = [...new Set(priceItems.map((item) => item.stops))].sort((a, b) => a - b);
+        stopCounts.forEach((stops) => {
+          const label = document.createElement('label');
+          label.className = 'flex cursor-pointer items-center gap-2 rounded-lg p-2 text-xs hover:bg-slate-50';
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = true;
+          input.value = String(stops);
+          input.dataset.stopFilter = 'true';
+          input.className = 'h-4 w-4 accent-[var(--color-ink-soft)]';
+          const text = document.createElement('span');
+          text.className = 'font-semibold';
+          text.textContent = stops === 0 ? 'رحلات مباشرة' : stops === 1 ? 'محطة واحدة' : `${stops} محطات`;
+          label.append(input, text);
+          stopFilters.append(label);
+        });
+      };
+
+      const getFilteredFlights = () => {
+        const allowedAirlines = new Set(
+          [...airlineFilters.querySelectorAll('[data-airline-filter]:checked')].map((input) => input.value)
+        );
+        const allowedStops = new Set(
+          [...stopFilters.querySelectorAll('[data-stop-filter]:checked')].map((input) => Number(input.value))
+        );
+        return priceItems.filter((item) => {
+          if (item.price.amount > maxPrice) return false;
+          if (item.airlines.length && !item.airlines.some((airline) => allowedAirlines.has(airline))) return false;
+          if (!allowedStops.has(item.stops)) return false;
+          if (selectedTime !== 'all' && item.departureHour !== null) {
+            const ranges = { morning: [6, 12], afternoon: [12, 18], evening: [18, 24], overnight: [0, 6] };
+            const [start, end] = ranges[selectedTime];
+            if (item.departureHour < start || item.departureHour >= end) return false;
+          }
+          return true;
+        });
+      };
 
       const renderResults = () => {
-        const ordered = [...priceItems].sort((first, second) => (
-          sort.value === 'duration'
-            ? first.duration - second.duration
-            : first.price.amount - second.price.amount
-        ));
+        const filtered = getFilteredFlights();
+        const ordered = [...filtered].sort((first, second) => {
+          if (currentSort === 'duration') {
+            if (!first.duration) return second.duration ? 1 : first.price.amount - second.price.amount;
+            if (!second.duration) return -1;
+            return first.duration - second.duration;
+          }
+          if (currentSort === 'best') {
+            return first.stops - second.stops
+              || (first.duration && second.duration ? first.duration - second.duration : 0)
+              || first.price.amount - second.price.amount;
+          }
+          return first.price.amount - second.price.amount;
+        });
         results.replaceChildren();
+        count.textContent = `تم العثور على ${filtered.length} من ${priceItems.length} رحلة`;
+        if (ordered.length === 0) {
+          status.hidden = false;
+          status.textContent = 'لا توجد رحلات مطابقة للفلاتر المختارة. جرّب تعديل السعر أو الفلاتر.';
+          return;
+        }
+        status.hidden = true;
         ordered.forEach((item, index) => {
           const card = document.createElement('article');
-          card.className = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[var(--color-mint)] hover:shadow-md';
+          card.className = 'rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:border-[var(--color-mint)] hover:shadow-md';
+          const layout = document.createElement('div');
+          layout.className = 'flex flex-col gap-5 md:flex-row md:items-stretch';
+          const details = document.createElement('div');
+          details.className = 'min-w-0 flex-1 space-y-4';
+          const header = document.createElement('div');
+          header.className = 'flex flex-wrap items-center gap-3';
+          if (item.logo) {
+            const logo = document.createElement('img');
+            logo.src = item.logo;
+            logo.alt = '';
+            logo.loading = 'lazy';
+            logo.className = 'h-10 w-10 rounded-xl border border-slate-100 object-contain';
+            header.append(logo);
+          } else {
+            const badge = document.createElement('span');
+            badge.className = 'flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 font-black text-[var(--color-ink-soft)]';
+            badge.textContent = item.airlineCode || '✈';
+            header.append(badge);
+          }
+          const airlineName = document.createElement('div');
+          const airlineTitle = document.createElement('p');
+          airlineTitle.className = 'font-extrabold';
+          airlineTitle.textContent = item.airlines.join(' • ') || 'شركة الطيران غير متاحة';
+          const airlineCode = document.createElement('p');
+          airlineCode.className = 'text-xs text-slate-400';
+          airlineCode.textContent = item.airlineCode ? `رمز الناقل: ${item.airlineCode}` : 'تفاصيل الناقل من مزوّد الرحلة';
+          airlineName.append(airlineTitle, airlineCode);
+          header.append(airlineName);
+          const tag = document.createElement('span');
+          tag.className = 'mr-auto rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-[var(--color-ink-soft)]';
+          tag.textContent = item.stops === 0 ? 'مباشرة' : `${item.stops} توقف`;
+          header.append(tag);
+          details.append(header);
 
-          const top = document.createElement('div');
-          top.className = 'flex items-center justify-between gap-3';
-          const label = document.createElement('span');
-          label.className = 'rounded-full bg-[var(--color-sky)] px-3 py-1 text-xs font-extrabold text-[var(--color-ink-soft)]';
-          label.textContent = index === 0
-            ? (sort.value === 'duration' ? 'أقصر مدة' : 'أقل سعر')
-            : 'رحلة متاحة';
-          const price = document.createElement('strong');
-          price.className = 'text-lg font-black text-[var(--color-ink)]';
-          price.textContent = formatPrice(item.price.amount, item.price.currency);
-          top.append(label, price);
-
-          const route = document.createElement('p');
-          route.className = 'mt-5 flex flex-wrap items-center gap-2 font-extrabold';
-          setRoute(route);
-          const airline = document.createElement('p');
-          airline.className = 'mt-2 text-sm font-bold text-[var(--color-mint)]';
-          airline.textContent = item.airlines.join(' • ') || 'شركة الطيران غير متاحة';
-          const segments = document.createElement('div');
-          segments.className = 'mt-4 space-y-3 border-t border-slate-100 pt-3';
           item.segments.forEach((segment, segmentIndex) => {
             const segmentCard = document.createElement('div');
-            segmentCard.className = 'rounded-xl bg-slate-50 p-3';
-            const segmentTitle = document.createElement('p');
-            segmentTitle.className = 'text-xs font-extrabold text-slate-500';
-            segmentTitle.textContent = item.segments.length === 2
-              ? (segmentIndex === 0 ? 'رحلة الذهاب' : 'رحلة العودة')
-              : `مقطع الرحلة ${segmentIndex + 1}`;
-            const times = document.createElement('p');
-            times.className = 'mt-1 text-sm font-bold';
-            const departure = getSegmentTime(segment, 'departure');
-            const arrival = getSegmentTime(segment, 'arrival');
-            times.textContent = [departure, arrival].filter(Boolean).join('  ←  ') || 'موعد الرحلة غير متاح';
-            const airports = document.createElement('p');
-            airports.className = 'mt-1 text-xs font-semibold text-slate-600';
-            const departureAirport = getAirportName(segment, 'departure');
-            const arrivalAirport = getAirportName(segment, 'arrival');
-            airports.textContent = [departureAirport, arrivalAirport].filter(Boolean).join('  ←  ');
-            const airlineName = getAirline(segment) || item.airlines.join(' • ');
-            const flightNumber = getField(segment, 'flightNumber', 'flight_number', 'number');
-            const detail = document.createElement('p');
-            detail.className = 'mt-1 text-xs text-slate-500';
-            detail.textContent = [airlineName, flightNumber].filter(Boolean).join(' • ') || 'تفاصيل الناقل غير متاحة';
-            segmentCard.append(segmentTitle, times);
-            if (airports.textContent) segmentCard.append(airports);
-            segmentCard.append(detail);
-            segments.append(segmentCard);
+            segmentCard.className = 'grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-xl bg-slate-50 p-3 sm:gap-4';
+            const origin = document.createElement('div');
+            origin.className = 'min-w-0';
+            const direction = document.createElement('p');
+            direction.className = 'text-xs font-semibold text-slate-500';
+            direction.textContent = segmentIndex === 0 ? `الذهاب • ${formatDate(departureDate)}` : segmentIndex === 1 ? `العودة • ${formatDate(arrivalDate)}` : `مقطع ${segmentIndex + 1}`;
+            const departureTime = document.createElement('p');
+            departureTime.className = 'mt-1 font-black';
+            departureTime.textContent = getSegmentTime(segment, 'departure') || '—';
+            const departureCode = document.createElement('p');
+            departureCode.className = 'truncate text-xs font-semibold text-slate-500';
+            departureCode.textContent = getAirportName(segment, 'departure') || departureId;
+            origin.append(direction, departureTime, departureCode);
+
+            const middle = document.createElement('div');
+            middle.className = 'text-center';
+            const duration = document.createElement('p');
+            duration.className = 'text-[11px] text-slate-500';
+            const segmentDuration = getDuration(segment);
+            duration.textContent = formatDuration(
+              segmentDuration || (item.segments.length === 1 ? item.duration : 0)
+            );
+            const line = document.createElement('p');
+            line.className = 'my-1 text-[var(--color-ink-soft)]';
+            line.setAttribute('aria-hidden', 'true');
+            line.textContent = '────────✈';
+            middle.append(duration, line);
+
+            const destination = document.createElement('div');
+            destination.className = 'min-w-0 text-left';
+            const arrivalTime = document.createElement('p');
+            arrivalTime.className = 'mt-5 font-black';
+            arrivalTime.textContent = getSegmentTime(segment, 'arrival') || '—';
+            const arrivalCode = document.createElement('p');
+            arrivalCode.className = 'truncate text-xs font-semibold text-slate-500';
+            arrivalCode.textContent = getAirportName(segment, 'arrival') || arrivalId;
+            destination.append(arrivalTime, arrivalCode);
+            segmentCard.append(origin, middle, destination);
+            details.append(segmentCard);
           });
-          const note = document.createElement('p');
-          note.className = 'mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500';
-          note.textContent = item.duration > 0 ? `المدة الإجمالية: ${item.duration} دقيقة` : 'تحقق من تفاصيل الرحلة لدى جهة الحجز';
-          card.append(top, route, airline, segments, note);
+          if (item.segments.length === 0) {
+            const missingDetails = document.createElement('p');
+            missingDetails.className = 'rounded-xl bg-slate-50 p-3 text-sm text-slate-500';
+            missingDetails.textContent = 'تفاصيل المقاطع غير متاحة.';
+            details.append(missingDetails);
+          }
+
+          const pricePanel = document.createElement('div');
+          pricePanel.className = 'flex flex-row items-center justify-between gap-4 border-t border-slate-100 pt-4 text-center md:w-48 md:flex-col md:justify-center md:border-r md:border-t-0 md:pr-5 md:pt-0';
+          const priceTitle = document.createElement('span');
+          priceTitle.className = 'text-xs text-slate-500';
+          priceTitle.textContent = 'السعر الإجمالي';
+          const price = document.createElement('strong');
+          price.className = 'text-2xl font-black text-emerald-700';
+          price.textContent = formatPrice(item.price.amount, item.price.currency);
+          const badge = document.createElement('span');
+          badge.className = 'text-[11px] text-slate-500';
+          badge.textContent = index === 0 && currentSort === 'duration'
+            ? 'الأسرع ضمن النتائج'
+            : index === 0 && currentSort === 'best'
+              ? 'أفضل توازن ضمن النتائج'
+              : index === 0
+                ? 'الأقل سعرًا ضمن النتائج'
+                : 'السعر للشخص';
+          pricePanel.append(priceTitle, price, badge);
+          layout.append(details, pricePanel);
+          card.append(layout);
           results.append(card);
         });
       };
 
-      fetch(`${apiBase}/api/flight-roundtrip?${params}`)
-        .then(async (response) => {
-          const payload = await response.json();
-          if (!response.ok) {
-            throw new Error(payload.message || 'تعذر تحميل أسعار الرحلات.');
-          }
-          return payload;
-        })
-        .then((payload) => {
-          priceItems = getFlightOffers(payload).map((offer) => {
-            const segments = getSegments(offer);
-            const offerAirlines = Array.isArray(offer.airlines)
-              ? offer.airlines.map((airline) => typeof airline === 'string' ? airline : airline?.name).filter(Boolean)
-              : [];
-            const airlines = [...new Set([...segments.map(getAirline).filter(Boolean), ...offerAirlines])];
-            const duration = getDuration(offer);
-            return { price: getPrice(offer), segments, airlines, duration };
-          });
-          if (priceItems.length === 0) {
-            status.textContent = 'لم يعثر مزوّد الخدمة على رحلات بتفاصيل قابلة للعرض لهذا المسار والتاريخين. جرّب تاريخًا آخر.';
-            count.textContent = 'لا توجد رحلات متاحة.';
-            return;
-          }
-          priceItems.sort((first, second) => first.price.amount - second.price.amount);
-          status.hidden = true;
-          count.textContent = `${priceItems.length} رحلة متاحة من ${departureName} إلى ${arrivalName}`;
-          sort.disabled = false;
-          renderResults();
-        })
-        .catch((error) => {
-          status.textContent = error instanceof Error
-            ? error.message
-            : 'تعذر تحميل الأسعار؛ حاول مرة أخرى لاحقًا.';
-          count.textContent = 'تعذر تحميل النتائج.';
-        });
+      const setupPriceRange = () => {
+        const prices = priceItems.map((item) => item.price.amount);
+        const minimum = Math.floor(Math.min(...prices));
+        const maximum = Math.ceil(Math.max(...prices));
+        priceRange.min = String(minimum);
+        priceRange.max = String(Math.max(maximum, minimum + 1));
+        priceRange.value = String(maximum);
+        priceRange.disabled = false;
+        maxPrice = maximum;
+        document.getElementById('min-price-label').textContent = formatPrice(minimum);
+        document.getElementById('max-price-label').textContent = formatPrice(maximum);
+        document.getElementById('price-limit-label').textContent = formatPrice(maximum);
+      };
 
-      sort.addEventListener('change', renderResults);
+      const renderCalendar = (items) => {
+        calendarStrip.replaceChildren();
+        const valid = items.filter((item) => (
+          item && Number.isFinite(Number(item.price))
+          && isValidDate(item.departureDate)
+          && isValidDate(item.arrivalDate)
+        ));
+        if (valid.length === 0) {
+          document.getElementById('best-calendar-price').textContent = 'لا توجد أسعار تقويمية';
+          return;
+        }
+        const bestPrice = Math.min(...valid.map((item) => Number(item.price)));
+        document.getElementById('best-calendar-price').textContent = `أقل سعر: ${formatPrice(bestPrice)}`;
+        valid.forEach((item) => {
+          const selected = item.departureDate === departureDate;
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = selected
+            ? 'min-w-28 rounded-xl border border-emerald-300 bg-emerald-500/20 p-3 text-white'
+            : 'min-w-28 rounded-xl border border-white/15 bg-white/10 p-3 text-blue-100 transition hover:bg-white/20';
+          button.setAttribute('aria-label', `${formatDate(item.departureDate)}، ${formatPrice(Number(item.price))}`);
+          const day = document.createElement('span');
+          day.className = 'block text-xs font-semibold';
+          day.textContent = formatDate(item.departureDate);
+          const price = document.createElement('span');
+          price.className = 'mt-1 block text-sm font-black';
+          price.textContent = formatPrice(Number(item.price));
+          button.append(day, price);
+          button.addEventListener('click', () => {
+            const next = new URLSearchParams(window.location.search);
+            next.set('departureDate', item.departureDate);
+            next.set('arrivalDate', item.arrivalDate);
+            window.location.assign(`${window.location.pathname}?${next}`);
+          });
+          calendarStrip.append(button);
+        });
+      };
+
+      filterToggle.addEventListener('click', () => {
+        const expanded = filterToggle.getAttribute('aria-expanded') === 'true';
+        filterToggle.setAttribute('aria-expanded', String(!expanded));
+        filterSidebar.classList.toggle('hidden', expanded);
+      });
+      priceRange.addEventListener('input', () => {
+        maxPrice = Number(priceRange.value);
+        document.getElementById('price-limit-label').textContent = formatPrice(maxPrice);
+        renderResults();
+      });
+      airlineFilters.addEventListener('change', renderResults);
+      stopFilters.addEventListener('change', renderResults);
+      timeFilters.querySelectorAll('[data-time]').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedTime = button.dataset.time;
+          timeFilters.querySelectorAll('[data-time]').forEach((option) => {
+            const selected = option === button;
+            option.setAttribute('aria-pressed', String(selected));
+            option.className = selected
+              ? 'rounded-xl border border-[var(--color-ink)] bg-sky-50 p-2 font-bold'
+              : 'rounded-xl border border-slate-200 p-2 font-semibold';
+          });
+          renderResults();
+        });
+      });
+      sortButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          currentSort = button.dataset.sort;
+          sortButtons.forEach((option) => {
+            const selected = option === button;
+            option.setAttribute('aria-pressed', String(selected));
+            option.className = selected
+              ? 'rounded-lg bg-white px-3 py-2 font-extrabold text-[var(--color-ink-soft)] shadow-sm ring-1 ring-slate-200'
+              : 'rounded-lg px-3 py-2 font-bold text-slate-600 hover:bg-slate-100';
+          });
+          renderResults();
+        });
+      });
+      document.getElementById('reset-filters').addEventListener('click', () => {
+        airlineFilters.querySelectorAll('[data-airline-filter]').forEach((input) => { input.checked = true; });
+        stopFilters.querySelectorAll('[data-stop-filter]').forEach((input) => { input.checked = true; });
+        selectedTime = 'all';
+        timeFilters.querySelector('[data-time="all"]').click();
+        if (!priceRange.disabled) {
+          priceRange.value = priceRange.max;
+          priceRange.dispatchEvent(new Event('input'));
+        } else {
+          renderResults();
+        }
+      });
+
+      const requiredIsValid = requiredValues.every(Boolean)
+        && isValidDate(departureDate)
+        && isValidDate(arrivalDate)
+        && query.get('tripType') === 'roundtrip';
+      if (!requiredIsValid) {
+        status.textContent = 'بيانات البحث غير مكتملة. عُد إلى نموذج البحث واختر مطاري المغادرة والوصول والتاريخين.';
+        count.textContent = 'لا توجد بيانات بحث صالحة.';
+      } else {
+        const fetchJson = async (url) => {
+          const response = await fetch(url);
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.message || 'تعذر تحميل البيانات.');
+          return payload;
+        };
+
+        const calendarParams = new URLSearchParams(params);
+        const flightRequest = fetchJson(`${apiBase}/api/flight-roundtrip?${params}`)
+          .then((payload) => {
+            priceItems = getFlightOffers(payload).map((offer) => {
+              const segments = getSegments(offer);
+              const offerAirlines = Array.isArray(offer.airlines)
+                ? offer.airlines.map((airline) => typeof airline === 'string' ? airline : airline?.name).filter(Boolean)
+                : [];
+              const airlines = [...new Set([...segments.map(getAirline).filter(Boolean), ...offerAirlines])];
+              const segmentDurations = segments.map(getDuration).filter((duration) => duration > 0);
+              const duration = getDuration(offer) || segmentDurations.reduce((total, value) => total + value, 0);
+              return {
+                price: getPrice(offer),
+                segments,
+                airlines,
+                duration,
+                stops: getStopCount(offer, segments),
+                airlineCode: getAirlineCode(offer, segments),
+                logo: getLogo(offer, segments),
+                departureHour: getDepartureHour(segments)
+              };
+            }).filter((item) => item.price);
+            if (priceItems.length === 0) throw new Error('لم يعثر مزوّد الخدمة على رحلات قابلة للعرض لهذا المسار والتاريخين.');
+            renderAirlineFilters();
+            renderStopFilters();
+            setupPriceRange();
+            renderResults();
+          })
+          .catch((error) => {
+            status.hidden = false;
+            status.textContent = error instanceof Error ? error.message : 'تعذر تحميل الرحلات؛ حاول مرة أخرى لاحقًا.';
+            count.textContent = 'تعذر تحميل النتائج.';
+          });
+
+        const calendarRequest = fetchJson(`${apiBase}/api/flight-price-calendar?${calendarParams}`)
+          .then((payload) => renderCalendar(Array.isArray(payload?.data) ? payload.data : []))
+          .catch(() => {
+            calendarStatus.textContent = 'تعذر تحميل تقويم الأسعار حاليًا.';
+            document.getElementById('best-calendar-price').textContent = 'التقويم غير متاح';
+          });
+
+        Promise.all([flightRequest, calendarRequest]);
+      }
     }
   </script>
 </body>
