@@ -90,6 +90,43 @@ test('autocomplete rejects short queries and missing credentials', async () => {
   assert.equal(requestCount, 0);
 });
 
+test('autocomplete translates supported Arabic city names for the provider', async () => {
+  let requestedUrl;
+  const handler = createFlightAutocompleteHandler({
+    env: testEnvironment,
+    fetchImpl: async (url) => {
+      requestedUrl = new URL(url);
+      return { ok: true, json: async () => ({ data: [] }) };
+    }
+  });
+
+  const response = await invoke(handler, {
+    url: `/api/flight-autocomplete?query=${encodeURIComponent('القاهرة')}`
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(requestedUrl.searchParams.get('query'), 'Cairo');
+});
+
+test('autocomplete reports unsupported Arabic names without calling provider', async () => {
+  let requestCount = 0;
+  const handler = createFlightAutocompleteHandler({
+    env: testEnvironment,
+    fetchImpl: async () => {
+      requestCount += 1;
+      return { ok: true, json: async () => ({ data: [] }) };
+    }
+  });
+
+  const response = await invoke(handler, {
+    url: `/api/flight-autocomplete?query=${encodeURIComponent('مدينة غير مدعومة')}`
+  });
+
+  assert.equal(response.statusCode, 400);
+  assert.match(response.body.message, /بالإنجليزية/);
+  assert.equal(requestCount, 0);
+});
+
 test('round-trip calendar forwards validated inputs and Saudi Riyal currency', async () => {
   const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
   const arrivalDate = nextDate(departureDate, 7);
