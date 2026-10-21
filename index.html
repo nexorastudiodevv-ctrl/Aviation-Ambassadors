@@ -420,8 +420,8 @@
       const arrivalPlaceInput = document.getElementById('flight-arrival-place');
       const arrivalIdInput = document.getElementById('flight-arrival-id');
       const arrivalSuggestions = document.getElementById('flight-arrival-suggestions');
-      const flightApiBase = window.PUBLISH_API_URL
-        ? new URL(window.PUBLISH_API_URL).origin
+      const flightApiBase = window.FLIGHT_API_URL
+        ? new URL(window.FLIGHT_API_URL).origin
         : window.location.origin;
 
       const getNextDate = (dateString) => {
