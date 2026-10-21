@@ -357,7 +357,24 @@ test('provider failures return sanitized errors', async () => {
   const response = await invoke(handler, { url: '/api/flight-autocomplete?query=Cairo' });
 
   assert.equal(response.statusCode, 502);
+  assert.match(response.body.message, /مفتاح RapidAPI/);
   assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
+});
+
+test('provider rate limits and service errors are explained to users', async () => {
+  for (const [status, expected] of [
+    [429, /حصة RapidAPI/],
+    [502, /غير متاح مؤقتًا \(HTTP 502\)/]
+  ]) {
+    const handler = createFlightAutocompleteHandler({
+      env: testEnvironment,
+      fetchImpl: async () => ({ ok: false, status, json: async () => ({}) })
+    });
+    const response = await invoke(handler, { url: '/api/flight-autocomplete?query=Cairo' });
+
+    assert.equal(response.statusCode, 502);
+    assert.match(response.body.message, expected);
+  }
 });
 
 test('provider rejection messages are shown without exposing credentials', async () => {
