@@ -120,6 +120,57 @@
       </div>
     </section>
 
+    <section class="relative z-10 mx-auto -mt-8 max-w-4xl px-4" aria-labelledby="flight-search-heading">
+      <div class="rounded-3xl bg-white p-6 shadow-xl shadow-[var(--color-ink)]/10 sm:p-8">
+        <div class="text-center">
+          <p class="text-sm font-bold text-ink-soft/75">خطط لرحلتك</p>
+          <h2 id="flight-search-heading" class="mt-2 text-2xl font-black">اختر نوع الرحلة</h2>
+        </div>
+        <form id="flight-search-form" class="mt-6">
+          <fieldset>
+            <legend class="sr-only">نوع الرحلة</legend>
+            <div class="flex flex-wrap justify-center gap-3">
+              <label class="cursor-pointer">
+                <input class="peer sr-only" type="radio" name="tripType" value="roundtrip" checked>
+                <span class="inline-block rounded-full border border-slate-200 px-5 py-2 font-bold text-ink transition peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sun">ذهاب وعودة</span>
+              </label>
+              <label class="cursor-pointer">
+                <input class="peer sr-only" type="radio" name="tripType" value="oneway">
+                <span class="inline-block rounded-full border border-slate-200 px-5 py-2 font-bold text-ink transition peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sun">ذهاب فقط</span>
+              </label>
+            </div>
+          </fieldset>
+          <div class="mx-auto mt-6 grid max-w-2xl gap-4 sm:grid-cols-2">
+            <div class="relative">
+              <label for="flight-departure-place" class="mb-2 block text-sm font-bold">مدينة أو مطار المغادرة</label>
+              <input id="flight-departure-place" type="search" autocomplete="off" required placeholder="مثال: القاهرة" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+              <input id="flight-departure-id" type="hidden">
+              <div id="flight-departure-suggestions" class="absolute inset-x-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl" role="listbox" hidden></div>
+            </div>
+            <div class="relative">
+              <label for="flight-arrival-place" class="mb-2 block text-sm font-bold">مدينة أو مطار الوصول</label>
+              <input id="flight-arrival-place" type="search" autocomplete="off" required placeholder="مثال: دبي" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+              <input id="flight-arrival-id" type="hidden">
+              <div id="flight-arrival-suggestions" class="absolute inset-x-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl" role="listbox" hidden></div>
+            </div>
+            <div>
+              <label for="flight-departure-date" class="mb-2 block text-sm font-bold">تاريخ الذهاب</label>
+              <input id="flight-departure-date" name="departureDate" type="date" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+            </div>
+            <div id="flight-return-date-field">
+              <label for="flight-return-date" class="mb-2 block text-sm font-bold">تاريخ العودة</label>
+              <input id="flight-return-date" name="arrivalDate" type="date" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+            </div>
+          </div>
+          <div class="mt-6 text-center">
+            <button type="submit" class="rounded-full bg-[var(--color-ink)] px-7 py-3 font-extrabold text-white transition hover:bg-[var(--color-ink-soft)]">اعرض تقويم الأسعار</button>
+          </div>
+        </form>
+        <p id="flight-search-status" class="mt-5 text-center text-sm text-slate-600" role="status" aria-live="polite">اختر مدينتي السفر والتواريخ لعرض تقويم الأسعار التقديرية بالريال السعودي.</p>
+        <div id="flight-price-results" class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite"></div>
+      </div>
+    </section>
+
     <section id="offers" class="relative z-10 mx-auto -mt-10 max-w-6xl px-4">
           <div class="rounded-[28px] bg-white p-4 shadow-2xl shadow-[var(--color-ink)]/10 sm:p-6">
         <div class="mb-5 flex items-center justify-between gap-4 flex-wrap">
@@ -329,6 +380,7 @@
     </div>
   </footer>
 
+  <script src="admin-panel/firebase-config.js"></script>
   <script>
     const menuBtn = document.getElementById('menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -340,10 +392,283 @@
         menuBtn.setAttribute('aria-expanded', String(!isOpen));
       });
     }
+
+    const flightSearchForm = document.getElementById('flight-search-form');
+    const departureDateInput = document.getElementById('flight-departure-date');
+    const returnDateInput = document.getElementById('flight-return-date');
+    const returnDateField = document.getElementById('flight-return-date-field');
+    const flightSearchStatus = document.getElementById('flight-search-status');
+    const flightPriceResults = document.getElementById('flight-price-results');
+    const searchButton = flightSearchForm?.querySelector('button[type="submit"]');
+
+    if (
+      flightSearchForm
+      && departureDateInput
+      && returnDateInput
+      && returnDateField
+      && flightSearchStatus
+      && flightPriceResults
+      && searchButton
+    ) {
+      const today = new Date();
+      const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      departureDateInput.min = todayString;
+
+      const departurePlaceInput = document.getElementById('flight-departure-place');
+      const departureIdInput = document.getElementById('flight-departure-id');
+      const departureSuggestions = document.getElementById('flight-departure-suggestions');
+      const arrivalPlaceInput = document.getElementById('flight-arrival-place');
+      const arrivalIdInput = document.getElementById('flight-arrival-id');
+      const arrivalSuggestions = document.getElementById('flight-arrival-suggestions');
+      const flightApiBase = window.PUBLISH_API_URL
+        ? new URL(window.PUBLISH_API_URL).origin
+        : window.location.origin;
+
+      const getNextDate = (dateString) => {
+        const [year, month, day] = dateString.split('-').map(Number);
+        const nextDate = new Date(year, month - 1, day + 1);
+        return `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
+      };
+
+      const getSuggestion = (item) => {
+        const airport = item.airport && typeof item.airport === 'object' ? item.airport : item;
+        const city = item.city && typeof item.city === 'object' ? item.city : null;
+        const id = airport.iataCode
+          || airport.airportCode
+          || airport.code
+          || airport.id
+          || item.airportId
+          || item.iataCode
+          || item.airportCode
+          || item.code
+          || item.id;
+        const name = airport.name || item.airportName || item.name || item.displayName || item.title || city?.name;
+        const cityName = city?.name || item.cityName;
+        const labelParts = [cityName, name].filter((part, index, parts) => part && parts.indexOf(part) === index);
+
+        if ((typeof id !== 'string' && typeof id !== 'number') || labelParts.length === 0) {
+          return null;
+        }
+
+        return { id: String(id), label: `${labelParts.join(' — ')} (${String(id)})` };
+      };
+
+      const collectSuggestions = (data) => {
+        const items = [];
+        const visit = (value, depth = 0) => {
+          if (depth > 5 || !value) return;
+          if (Array.isArray(value)) {
+            value.forEach((item) => visit(item, depth + 1));
+            return;
+          }
+          if (typeof value !== 'object') return;
+
+          const suggestion = getSuggestion(value);
+          if (suggestion) {
+            items.push(suggestion);
+            return;
+          }
+
+          Object.values(value).forEach((nestedValue) => visit(nestedValue, depth + 1));
+        };
+
+        visit(data?.data ?? data);
+        return items.slice(0, 8);
+      };
+
+      const setupPlaceAutocomplete = (input, idInput, suggestionsElement) => {
+        let debounceTimer;
+        let activeController;
+
+        input.addEventListener('input', () => {
+          idInput.value = '';
+          suggestionsElement.replaceChildren();
+          suggestionsElement.hidden = true;
+          clearTimeout(debounceTimer);
+          activeController?.abort();
+
+          const query = input.value.trim();
+          if (query.length < 2) return;
+
+          debounceTimer = setTimeout(async () => {
+            activeController = new AbortController();
+            try {
+              const response = await fetch(`${flightApiBase}/api/flight-autocomplete?query=${encodeURIComponent(query)}`, {
+                signal: activeController.signal
+              });
+              const data = await response.json();
+              if (!response.ok) {
+                flightSearchStatus.textContent = data.message || 'تعذر تحميل اقتراحات المطارات.';
+                return;
+              }
+
+              const suggestions = collectSuggestions(data);
+              suggestionsElement.replaceChildren();
+              suggestions.forEach((suggestion) => {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.role = 'option';
+                option.className = 'block w-full px-4 py-3 text-right text-sm font-semibold text-ink hover:bg-sky-50 focus:bg-sky-50 focus:outline-none';
+                option.textContent = suggestion.label;
+                option.addEventListener('click', () => {
+                  input.value = suggestion.label;
+                  idInput.value = suggestion.id;
+                  suggestionsElement.hidden = true;
+                });
+                suggestionsElement.append(option);
+              });
+              suggestionsElement.hidden = suggestions.length === 0;
+              if (suggestions.length === 0) {
+                flightSearchStatus.textContent = 'لم نعثر على مطارات مطابقة؛ جرّب اسم مدينة آخر.';
+              }
+            } catch (error) {
+              if (error.name !== 'AbortError') {
+                flightSearchStatus.textContent = 'تعذر الاتصال بخدمة اقتراح المطارات؛ حاول مرة أخرى.';
+              }
+            }
+          }, 300);
+        });
+
+        input.addEventListener('blur', () => {
+          setTimeout(() => {
+            suggestionsElement.hidden = true;
+          }, 150);
+        });
+      };
+
+      if (
+        departurePlaceInput
+        && departureIdInput
+        && departureSuggestions
+        && arrivalPlaceInput
+        && arrivalIdInput
+        && arrivalSuggestions
+      ) {
+        setupPlaceAutocomplete(departurePlaceInput, departureIdInput, departureSuggestions);
+        setupPlaceAutocomplete(arrivalPlaceInput, arrivalIdInput, arrivalSuggestions);
+      }
+
+      const updateTripType = () => {
+        const selectedTrip = flightSearchForm.querySelector('input[name="tripType"]:checked');
+        const isRoundTrip = selectedTrip?.value === 'roundtrip';
+
+        returnDateField.hidden = !isRoundTrip;
+        returnDateInput.disabled = !isRoundTrip;
+        returnDateInput.required = Boolean(isRoundTrip);
+        returnDateInput.min = departureDateInput.value ? getNextDate(departureDateInput.value) : todayString;
+        flightSearchStatus.textContent = isRoundTrip
+          ? 'اختر مدينتي السفر وتاريخي الذهاب والعودة لعرض أسعار تقريبية لتواريخ المغادرة خلال الشهر التالي.'
+          : 'تم اختيار الذهاب فقط؛ مزوّد الأسعار الحالي يدعم تقويم الذهاب والعودة فقط.';
+        flightPriceResults.replaceChildren();
+      };
+
+      flightSearchForm.querySelectorAll('input[name="tripType"]').forEach((tripTypeInput) => {
+        tripTypeInput.addEventListener('change', updateTripType);
+      });
+
+      departureDateInput.addEventListener('change', () => {
+        returnDateInput.min = departureDateInput.value ? getNextDate(departureDateInput.value) : todayString;
+        if (returnDateInput.value && returnDateInput.value < returnDateInput.min) {
+          returnDateInput.value = '';
+          flightSearchStatus.textContent = 'يجب أن يكون تاريخ العودة بعد تاريخ الذهاب؛ اختر تاريخ عودة جديدًا.';
+          returnDateInput.focus();
+        }
+      });
+
+      flightSearchForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        flightPriceResults.replaceChildren();
+
+        const selectedTrip = flightSearchForm.querySelector('input[name="tripType"]:checked');
+        if (selectedTrip?.value !== 'roundtrip') {
+          flightSearchStatus.textContent = 'عرض الأسعار متاح حاليًا لرحلات الذهاب والعودة فقط؛ لم يتم إرسال طلب.';
+          return;
+        }
+
+        const originId = departureIdInput?.value;
+        const destinationId = arrivalIdInput?.value;
+        if (!originId || !destinationId) {
+          flightSearchStatus.textContent = 'اختر مطار المغادرة والوصول من قائمة الاقتراحات.';
+          return;
+        }
+        if (!departureDateInput.value || !returnDateInput.value) {
+          flightSearchStatus.textContent = 'أدخل تاريخ الذهاب والعودة.';
+          return;
+        }
+
+        const params = new URLSearchParams({
+          tripType: 'roundtrip',
+          departureId: originId,
+          arrivalId: destinationId,
+          departureDate: departureDateInput.value,
+          arrivalDate: returnDateInput.value
+        });
+
+        searchButton.disabled = true;
+        searchButton.textContent = 'جارٍ البحث...';
+        flightSearchStatus.textContent = 'جارٍ تحميل تقويم أسعار الرحلات. قد يستغرق البحث بضع ثوانٍ.';
+        try {
+          const response = await fetch(`${flightApiBase}/api/flight-price-calendar?${params}`);
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.message || 'تعذر تحميل أسعار الرحلات.');
+          }
+
+          const prices = Array.isArray(payload?.data) ? payload.data : [];
+          const validPrices = prices.filter((item) => (
+            Number.isFinite(Number(item.price))
+            && typeof item.departureDate === 'string'
+            && typeof item.arrivalDate === 'string'
+          ));
+
+          if (validPrices.length === 0) {
+            flightSearchStatus.textContent = 'لم يعثر مزوّد الخدمة على أسعار لهذا المسار والتواريخ.';
+            return;
+          }
+
+          const formatDate = (date) => new Intl.DateTimeFormat('ar', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            timeZone: 'UTC'
+          }).format(new Date(`${date}T00:00:00.000Z`));
+          const formatPrice = new Intl.NumberFormat('ar-SA', {
+            style: 'currency',
+            currency: 'SAR',
+            maximumFractionDigits: 0
+          });
+
+          validPrices
+            .sort((first, second) => Number(first.price) - Number(second.price))
+            .forEach((item) => {
+              const card = document.createElement('article');
+              card.className = 'rounded-xl border border-slate-200 bg-slate-50 p-4';
+              const dates = document.createElement('p');
+              dates.className = 'text-sm font-bold text-ink';
+              dates.textContent = `${formatDate(item.departureDate)} — ${formatDate(item.arrivalDate)}`;
+              const price = document.createElement('p');
+              price.className = 'mt-2 text-lg font-black text-ink-soft';
+              price.textContent = formatPrice.format(Number(item.price));
+              card.append(dates, price);
+              flightPriceResults.append(card);
+            });
+
+          flightSearchStatus.textContent = `أسعار تقريبية من ${departurePlaceInput.value} إلى ${arrivalPlaceInput.value} لمدة إقامة مماثلة، ضمن تواريخ المغادرة خلال الشهر التالي. تحقق من السعر لدى جهة الحجز قبل الدفع.`;
+        } catch (error) {
+          flightSearchStatus.textContent = error instanceof Error
+            ? error.message
+            : 'تعذر تحميل أسعار الرحلات؛ حاول مرة أخرى لاحقًا.';
+        } finally {
+          searchButton.disabled = false;
+          searchButton.textContent = 'اعرض تقويم الأسعار';
+        }
+      });
+
+      updateTripType();
+    }
   </script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="admin-panel/firebase-config.js"></script>
   <script src="assets/js/home-live-articles.js"></script>
   <script src="assets/js/webmcp-tools.js"></script>
   <script type="application/ld+json">
