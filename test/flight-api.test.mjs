@@ -324,3 +324,22 @@ test('provider failures return sanitized errors', async () => {
   assert.equal(response.statusCode, 502);
   assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
 });
+
+test('provider rejection messages are shown without exposing credentials', async () => {
+  const handler = createFlightRoundTripHandler({
+    env: testEnvironment,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ status: false, message: 'Invalid key test-secret' })
+    })
+  });
+  const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
+  const arrivalDate = nextDate(departureDate, 7);
+  const response = await invoke(handler, {
+    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+  });
+
+  assert.equal(response.statusCode, 422);
+  assert.equal(response.body.message, 'Invalid key [redacted]');
+  assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
+});
