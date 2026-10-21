@@ -56,7 +56,15 @@ test('autocomplete proxies encoded queries without exposing its secret', async (
     fetchImpl: async (url, options) => {
       requestedUrl = new URL(url);
       requestedHeaders = options.headers;
-      return { ok: true, json: async () => ({ data: [{ code: 'CAI' }] }) };
+      return {
+        ok: true,
+        json: async () => ({
+          data: [{
+            info: { shortName: 'Cairo, Egypt', cityName: 'Cairo' },
+            nearbyAirports: [{ airport: { name: 'Cairo International Airport', code: 'CAI' } }]
+          }]
+        })
+      };
     }
   });
 
@@ -67,6 +75,7 @@ test('autocomplete proxies encoded queries without exposing its secret', async (
   assert.equal(requestedUrl.searchParams.get('query'), 'Cairo');
   assert.equal(requestedHeaders['x-rapidapi-key'], 'test-secret');
   assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
+  assert.equal(response.body.data.length, 1);
 });
 
 test('autocomplete rejects short queries and missing credentials', async () => {
@@ -108,6 +117,26 @@ test('autocomplete translates supported Arabic city names for the provider', asy
   assert.equal(requestedUrl.searchParams.get('query'), 'Cairo');
 });
 
+test('autocomplete distinguishes Oman from Amman in Arabic', async () => {
+  const queries = [];
+  const handler = createFlightAutocompleteHandler({
+    env: testEnvironment,
+    fetchImpl: async (url) => {
+      queries.push(new URL(url).searchParams.get('query'));
+      return { ok: true, json: async () => ({ data: [] }) };
+    }
+  });
+
+  for (const query of ['عُمان', 'عمّان']) {
+    const response = await invoke(handler, {
+      url: `/api/flight-autocomplete?query=${encodeURIComponent(query)}`
+    });
+    assert.equal(response.statusCode, 200);
+  }
+
+  assert.deepEqual(queries, ['Muscat', 'Amman']);
+});
+
 test('autocomplete reports unsupported Arabic names without calling provider', async () => {
   let requestCount = 0;
   const handler = createFlightAutocompleteHandler({
@@ -125,6 +154,32 @@ test('autocomplete reports unsupported Arabic names without calling provider', a
   assert.equal(response.statusCode, 400);
   assert.match(response.body.message, /بالإنجليزية/);
   assert.equal(requestCount, 0);
+});
+
+test('autocomplete keeps only Arab-country places', async () => {
+  const handler = createFlightAutocompleteHandler({
+    env: testEnvironment,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        data: [
+          { info: { shortName: 'Cairo, Egypt' }, nearbyAirports: [] },
+          { info: { shortName: 'Dubai - United Arab Emirates' }, nearbyAirports: [] },
+          { info: { shortName: 'Manama, Bahrain' }, nearbyAirports: [] },
+          { info: { shortName: 'London, United Kingdom' }, nearbyAirports: [] }
+        ],
+        status: true
+      })
+    })
+  });
+
+  const response = await invoke(handler, { url: '/api/flight-autocomplete?query=airports' });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(
+    response.body.data.map((place) => place.info.shortName),
+    ['Cairo, Egypt', 'Dubai - United Arab Emirates', 'Manama, Bahrain']
+  );
 });
 
 test('round-trip calendar forwards validated inputs and Saudi Riyal currency', async () => {

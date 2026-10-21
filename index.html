@@ -573,7 +573,7 @@
         returnDateInput.required = Boolean(isRoundTrip);
         returnDateInput.min = departureDateInput.value ? getNextDate(departureDateInput.value) : todayString;
         flightSearchStatus.textContent = isRoundTrip
-          ? 'اختر مدينتي السفر وتاريخي الذهاب والعودة لعرض أسعار تقريبية لتواريخ المغادرة خلال الشهر التالي.'
+          ? 'اختر مدينتي السفر من الدول العربية المتاحة وتاريخي الذهاب والعودة لعرض تقويم الأسعار.'
           : 'تم اختيار الذهاب فقط؛ مزوّد الأسعار الحالي يدعم تقويم الذهاب والعودة فقط.';
         flightPriceResults.replaceChildren();
       };
