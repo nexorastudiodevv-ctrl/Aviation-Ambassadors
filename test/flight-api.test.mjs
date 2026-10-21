@@ -330,7 +330,11 @@ test('provider rejection messages are shown without exposing credentials', async
     env: testEnvironment,
     fetchImpl: async () => ({
       ok: true,
-      json: async () => ({ status: false, message: 'Invalid key test-secret' })
+      json: async () => ({
+        status: false,
+        message: 'Errors',
+        errors: [{ code: 'invalid_parameter', field: 'arrivalDate', message: 'Invalid value for test-secret' }]
+      })
     })
   });
   const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
@@ -340,6 +344,6 @@ test('provider rejection messages are shown without exposing credentials', async
   });
 
   assert.equal(response.statusCode, 422);
-  assert.equal(response.body.message, 'Invalid key [redacted]');
+  assert.equal(response.body.message, 'Errors: invalid_parameter: arrivalDate: Invalid value for [redacted]');
   assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
 });
