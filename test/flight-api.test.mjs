@@ -347,3 +347,21 @@ test('provider rejection messages are shown without exposing credentials', async
   assert.equal(response.body.message, 'Errors: invalid_parameter: arrivalDate: Invalid value for [redacted]');
   assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
 });
+
+test('generic provider errors explain that full flight details are unavailable', async () => {
+  const handler = createFlightRoundTripHandler({
+    env: testEnvironment,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ status: false, message: 'Errors' })
+    })
+  });
+  const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
+  const arrivalDate = nextDate(departureDate, 7);
+  const response = await invoke(handler, {
+    url: `/api/flight-roundtrip?tripType=roundtrip&departureId=CAI&arrivalId=DXB&departureDate=${departureDate}&arrivalDate=${arrivalDate}`
+  });
+
+  assert.equal(response.statusCode, 422);
+  assert.match(response.body.message, /could not return full flight details/i);
+});
