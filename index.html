@@ -476,7 +476,10 @@
               }))
               : []
           )).filter(Boolean);
-          return [...new Map(suggestions.map((suggestion) => [suggestion.id, suggestion])).values()];
+          return [...new Map(suggestions.map((suggestion) => [
+            `${suggestion.id}:${suggestion.label}`,
+            suggestion
+          ])).values()];
         }
 
         const items = [];
@@ -498,7 +501,10 @@
         };
 
         visit(data?.data ?? data);
-        return [...new Map(items.map((suggestion) => [suggestion.id, suggestion])).values()];
+        return [...new Map(items.map((suggestion) => [
+          `${suggestion.id}:${suggestion.label}`,
+          suggestion
+        ])).values()];
       };
 
       const setupPlaceAutocomplete = (input, idInput, suggestionsElement) => {

@@ -52,7 +52,7 @@ function nextDate(date, days = 1) {
   return value.toISOString().slice(0, 10);
 }
 
-test('autocomplete proxies encoded queries without exposing its secret', async () => {
+test('autocomplete queries Travelpayouts places and normalizes Arab airport data', async () => {
   let requestedUrl;
   let requestedHeaders;
   const handler = createFlightAutocompleteHandler({
@@ -62,12 +62,14 @@ test('autocomplete proxies encoded queries without exposing its secret', async (
       requestedHeaders = options.headers;
       return {
         ok: true,
-        json: async () => ({
-          data: [{
-            info: { shortName: 'Cairo, Egypt', cityName: 'Cairo' },
-            nearbyAirports: [{ airport: { name: 'Cairo International Airport', code: 'CAI' } }]
-          }]
-        })
+        json: async () => [{
+          type: 'airport',
+          code: 'CAI',
+          name: 'مطار القاهرة الدولى',
+          city_name: 'القاهرة',
+          country_code: 'EG',
+          country_name: 'مصر'
+        }]
       };
     }
   });
@@ -75,27 +77,37 @@ test('autocomplete proxies encoded queries without exposing its secret', async (
   const response = await invoke(handler, { url: '/api/flight-autocomplete?query=Cairo' });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(requestedUrl.pathname, '/auto-complete');
-  assert.equal(requestedUrl.searchParams.get('query'), 'Cairo');
-  assert.equal(requestedHeaders['x-rapidapi-key'], 'test-secret');
-  assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
+  assert.equal(requestedUrl.origin, 'https://autocomplete.travelpayouts.com');
+  assert.equal(requestedUrl.pathname, '/places2');
+  assert.equal(requestedUrl.searchParams.get('term'), 'Cairo');
+  assert.equal(requestedUrl.searchParams.get('locale'), 'en');
+  assert.deepEqual(requestedUrl.searchParams.getAll('types[]'), ['city', 'airport']);
+  assert.equal(requestedHeaders, undefined);
   assert.equal(response.body.data.length, 1);
+  assert.deepEqual(response.body.data[0], {
+    code: 'CAI',
+    name: 'مطار القاهرة الدولى',
+    cityName: 'القاهرة',
+    countryName: 'مصر',
+    countryCode: 'EG',
+    type: 'airport'
+  });
 });
 
-test('autocomplete rejects short queries and missing credentials', async () => {
+test('autocomplete rejects short queries and missing origin configuration', async () => {
   let requestCount = 0;
   const configured = createFlightAutocompleteHandler({
     env: testEnvironment,
     fetchImpl: async () => {
       requestCount += 1;
-      return { ok: true, json: async () => ({ data: [] }) };
+      return { ok: true, json: async () => [] };
     }
   });
   const invalid = await invoke(configured, { url: '/api/flight-autocomplete?query=A' });
   assert.equal(invalid.statusCode, 400);
 
   const unconfigured = createFlightAutocompleteHandler({
-    env: { FLIGHT_ALLOWED_ORIGINS: testEnvironment.FLIGHT_ALLOWED_ORIGINS },
+    env: {},
     fetchImpl: configured.fetchImpl
   });
   const missingKey = await invoke(unconfigured, { url: '/api/flight-autocomplete?query=Cairo' });
@@ -103,13 +115,13 @@ test('autocomplete rejects short queries and missing credentials', async () => {
   assert.equal(requestCount, 0);
 });
 
-test('autocomplete translates supported Arabic city names for the provider', async () => {
+test('autocomplete searches Arabic input using the Arabic Travelpayouts locale', async () => {
   let requestedUrl;
   const handler = createFlightAutocompleteHandler({
     env: testEnvironment,
     fetchImpl: async (url) => {
       requestedUrl = new URL(url);
-      return { ok: true, json: async () => ({ data: [] }) };
+      return { ok: true, json: async () => [] };
     }
   });
 
@@ -118,7 +130,8 @@ test('autocomplete translates supported Arabic city names for the provider', asy
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(requestedUrl.searchParams.get('query'), 'Cairo');
+  assert.equal(requestedUrl.searchParams.get('term'), 'القاهرة');
+  assert.equal(requestedUrl.searchParams.get('locale'), 'ar');
 });
 
 test('autocomplete distinguishes Oman from Amman in Arabic', async () => {
@@ -126,8 +139,11 @@ test('autocomplete distinguishes Oman from Amman in Arabic', async () => {
   const handler = createFlightAutocompleteHandler({
     env: testEnvironment,
     fetchImpl: async (url) => {
-      queries.push(new URL(url).searchParams.get('query'));
-      return { ok: true, json: async () => ({ data: [] }) };
+      queries.push({
+        term: new URL(url).searchParams.get('term'),
+        locale: new URL(url).searchParams.get('locale')
+      });
+      return { ok: true, json: async () => [] };
     }
   });
 
@@ -138,7 +154,10 @@ test('autocomplete distinguishes Oman from Amman in Arabic', async () => {
     assert.equal(response.statusCode, 200);
   }
 
-  assert.deepEqual(queries, ['Muscat', 'Amman']);
+  assert.deepEqual(queries, [
+    { term: 'عُمان', locale: 'ar' },
+    { term: 'عمّان', locale: 'ar' }
+  ]);
 });
 
 test('autocomplete passes Arabic place names outside the alias list to the provider', async () => {
@@ -147,7 +166,7 @@ test('autocomplete passes Arabic place names outside the alias list to the provi
     env: testEnvironment,
     fetchImpl: async (url) => {
       requestedUrl = new URL(url);
-      return { ok: true, json: async () => ({ data: [] }) };
+      return { ok: true, json: async () => [] };
     }
   });
 
@@ -156,7 +175,8 @@ test('autocomplete passes Arabic place names outside the alias list to the provi
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(requestedUrl.searchParams.get('query'), 'مدينة عربية أخرى');
+  assert.equal(requestedUrl.searchParams.get('term'), 'مدينة عربية أخرى');
+  assert.equal(requestedUrl.searchParams.get('locale'), 'ar');
 });
 
 test('autocomplete keeps only Arab-country places', async () => {
@@ -164,17 +184,14 @@ test('autocomplete keeps only Arab-country places', async () => {
     env: testEnvironment,
     fetchImpl: async () => ({
       ok: true,
-      json: async () => ({
-        data: [
-          { info: { shortName: 'Cairo, Egypt' }, nearbyAirports: [] },
-          { info: { shortName: 'Dubai - United Arab Emirates' }, nearbyAirports: [] },
-          { info: { shortName: 'Manama, Bahrain' }, nearbyAirports: [] },
-          { info: { shortName: 'Riyadh', description: 'Capital of Saudi Arabia' }, nearbyAirports: [] },
-          { info: { shortName: 'A city with country code only', countryCode: 'OM' }, nearbyAirports: [] },
-          { info: { shortName: 'London, United Kingdom' }, nearbyAirports: [] }
-        ],
-        status: true
-      })
+      json: async () => [
+        { type: 'city', code: 'CAI', name: 'القاهرة', country_code: 'EG', country_name: 'مصر' },
+        { type: 'airport', code: 'DXB', name: 'Dubai Airport', city_name: 'Dubai', country_code: 'AE', country_name: 'United Arab Emirates' },
+        { type: 'airport', code: 'BAH', name: 'Bahrain Airport', country_name: 'Bahrain', country_code: 'BH' },
+        { type: 'city', code: 'RUH', name: 'Riyadh', country_code: 'SA', country_name: 'Saudi Arabia' },
+        { type: 'airport', code: 'MCT', name: 'Muscat Airport', country_code: 'OM' },
+        { type: 'airport', code: 'LHR', name: 'London Heathrow', country_code: 'GB', country_name: 'United Kingdom' }
+      ]
     })
   });
 
@@ -182,8 +199,8 @@ test('autocomplete keeps only Arab-country places', async () => {
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(
-    response.body.data.map((place) => place.info.shortName),
-    ['Cairo, Egypt', 'Dubai - United Arab Emirates', 'Manama, Bahrain', 'Riyadh', 'A city with country code only']
+    response.body.data.map((place) => place.code),
+    ['CAI', 'DXB', 'BAH', 'RUH', 'MCT']
   );
 });
 
@@ -455,7 +472,7 @@ test('round-trip outbound and returning searches reject invalid parameters befor
   assert.equal(requestCount, 0);
 });
 
-test('provider failures return sanitized errors', async () => {
+test('Travelpayouts autocomplete failures do not disclose credentials', async () => {
   const handler = createFlightAutocompleteHandler({
     env: testEnvironment,
     fetchImpl: async () => ({ ok: false, status: 401, json: async () => ({ message: 'test-secret' }) })
@@ -463,14 +480,14 @@ test('provider failures return sanitized errors', async () => {
   const response = await invoke(handler, { url: '/api/flight-autocomplete?query=Cairo' });
 
   assert.equal(response.statusCode, 502);
-  assert.match(response.body.message, /مفتاح RapidAPI/);
+  assert.match(response.body.message, /Travelpayouts/);
   assert.equal(JSON.stringify(response.body).includes('test-secret'), false);
 });
 
-test('provider rate limits and service errors are explained to users', async () => {
+test('Travelpayouts autocomplete rate limits and errors are explained to users', async () => {
   for (const [status, expected] of [
-    [429, /حصة RapidAPI/],
-    [502, /غير متاح مؤقتًا \(HTTP 502\)/]
+    [429, /طلبات اقتراح المطارات/],
+    [502, /Travelpayouts \(HTTP 502\)/]
   ]) {
     const handler = createFlightAutocompleteHandler({
       env: testEnvironment,
