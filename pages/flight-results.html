@@ -37,7 +37,7 @@
         <p id="selected-dates" class="text-xs text-sky-100"></p>
         <span aria-hidden="true" class="hidden h-5 border-r border-white/20 sm:block"></span>
         <span class="text-xs text-sky-100">مسافر واحد • سياحية</span>
-        <span class="rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-black">SAR</span>
+        <span id="selected-currency" class="rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-black">SAR</span>
       </div>
       <div class="flex items-center gap-2">
         <a href="../index.html#flight-search-heading" class="rounded-full border border-white/30 px-4 py-2 text-sm font-bold transition hover:border-[var(--color-sun)] hover:text-[var(--color-sun)]">تعديل البحث</a>
@@ -89,18 +89,7 @@
       </aside>
 
       <section class="space-y-5 lg:col-span-3" aria-labelledby="results-heading">
-        <div class="rounded-2xl border border-blue-900 bg-gradient-to-l from-blue-950 to-indigo-900 p-5 text-white shadow-lg">
-          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 id="results-heading" class="text-lg font-black">تقويم أرخص أسعار الرحلات</h1>
-              <p class="mt-1 text-xs text-blue-100">أسعار تقريبية لرحلات ذهاب وعودة بالريال السعودي</p>
-            </div>
-            <p id="best-calendar-price" class="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-xs font-extrabold text-emerald-200">جارٍ تحميل التقويم...</p>
-          </div>
-          <div id="calendar-strip" class="flex gap-3 overflow-x-auto pb-2 text-center" aria-label="تواريخ وأسعار بديلة"></div>
-          <p id="calendar-status" class="text-xs text-blue-100" role="status" aria-live="polite"></p>
-        </div>
-
+        <h1 id="results-heading" class="text-xl font-black">نتائج الرحلات</h1>
         <div class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p id="results-count" class="text-sm font-bold text-slate-700" aria-live="polite">جارٍ تحميل الرحلات...</p>
           <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
@@ -125,6 +114,10 @@
     const arrivalId = query.get('arrivalId') || '';
     const departureDate = query.get('departureDate') || '';
     const arrivalDate = query.get('arrivalDate') || '';
+    const requestedCurrency = query.get('currency') || 'SAR';
+    const currency = ['SAR', 'USD', 'EUR'].includes(requestedCurrency.toUpperCase())
+      ? requestedCurrency.toUpperCase()
+      : 'SAR';
     const departureName = query.get('departureName') || departureId;
     const arrivalName = query.get('arrivalName') || arrivalId;
     const summary = document.getElementById('route-summary');
@@ -139,8 +132,6 @@
     const stopFilters = document.getElementById('stop-filters');
     const priceRange = document.getElementById('price-range');
     const timeFilters = document.getElementById('time-filters');
-    const calendarStrip = document.getElementById('calendar-strip');
-    const calendarStatus = document.getElementById('calendar-status');
     const isValidDate = (value) => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
       const date = new Date(`${value}T00:00:00.000Z`);
@@ -162,30 +153,12 @@
       year: 'numeric',
       timeZone: 'UTC'
     }).format(new Date(`${value}T00:00:00.000Z`));
-    const formatPrice = (value, currency = 'SAR') => new Intl.NumberFormat('ar-SA', {
+    const formatPrice = (value, priceCurrency = currency) => new Intl.NumberFormat('ar-SA', {
       style: 'currency',
-      currency: /^[A-Z]{3}$/.test(currency) ? currency : 'SAR',
+      currency: /^[A-Z]{3}$/.test(priceCurrency) ? priceCurrency : 'SAR',
       maximumFractionDigits: 0
     }).format(value);
-
-    const getPrice = (offer) => {
-      const value = offer.price ?? offer.totalPrice ?? offer.amount;
-      const amount = typeof value === 'object' && value !== null
-        ? Number(value.amount ?? value.raw ?? value.value ?? value.total ?? value.price)
-        : Number(String(value ?? '').replace(/[^\d.-]/g, ''));
-      const currency = offer.currency || offer.price?.currency || 'SAR';
-      return Number.isFinite(amount) ? { amount, currency } : null;
-    };
-
-    const getSegments = (offer) => {
-      const segments = offer.flights || offer.segments || offer.legs || offer.flightSegments;
-      if (Array.isArray(segments)) {
-        return segments.flatMap((leg) => Array.isArray(leg?.segments) ? leg.segments : [leg]);
-      }
-      const outbound = offer.outboundFlight || offer.outbound || offer.departure;
-      const inbound = offer.inboundFlight || offer.inbound || offer.return;
-      return [outbound, inbound].filter((leg) => leg && typeof leg === 'object');
-    };
+    document.getElementById('selected-currency').textContent = currency;
 
     const getField = (object, ...keys) => {
       for (const key of keys) {
@@ -217,22 +190,6 @@
       );
     };
 
-    const getAirline = (segment) => segment?.airline?.airlineName
-      || segment?.airline?.name
-      || getField(
-        segment,
-        'airlineName',
-        'airline_name',
-        'airline',
-        'carrier',
-        'operatingCarrier',
-        'name'
-      ) || (Array.isArray(segment.airlines || segment.carriers)
-      ? (segment.airlines || segment.carriers).map((airline) => (
-        typeof airline === 'string' ? airline : airline?.name
-      )).filter(Boolean).join(' • ')
-      : '');
-
     const getDuration = (offer) => {
       const value = offer.total_duration ?? offer.duration ?? offer.durationMinutes ?? 0;
       const numericDuration = Number(value);
@@ -247,81 +204,6 @@
       if (direct) return direct;
       const airport = segment?.[`${field}_airport`] || segment?.[`${field}Airport`];
       return getField(segment, field) || getField(airport, 'time', 'dateTime', 'datetime');
-    };
-
-    const getStopCount = (offer, segments) => {
-      const value = offer.stopsCount ?? offer.stop_count ?? offer.stops;
-      if (typeof value === 'number' && Number.isFinite(value)) return value;
-      if (typeof value === 'string') {
-        if (/direct|nonstop|no stops/i.test(value)) return 0;
-        const count = Number(value.match(/\d+/)?.[0]);
-        if (Number.isFinite(count)) return count;
-      }
-      if (Array.isArray(value)) return value.length;
-      return segments.length === 2 ? 0 : Math.max(0, Math.ceil(segments.length / 2) - 1);
-    };
-
-    const getAirlineCode = (offer, segments) => {
-      const candidates = [
-        offer.airlineCode,
-        offer.airline_code,
-        offer.carrierCode,
-        segments[0]?.airlineCode,
-        segments[0]?.airline_code,
-        segments[0]?.carrierCode,
-        segments[0]?.airline?.airlineCode,
-        segments[0]?.airline?.code,
-        segments[0]?.carrier?.code
-      ];
-      return candidates.find((value) => typeof value === 'string' && value.trim()) || '';
-    };
-
-    const getLogo = (offer, segments) => {
-      const logo = offer.airlineLogo
-        || offer.airline_logo
-        || segments[0]?.airlineLogo
-        || segments[0]?.airline_logo
-        || segments[0]?.airline?.logo;
-      return typeof logo === 'string' && /^https:\/\//i.test(logo) ? logo : '';
-    };
-
-    const getDepartureHour = (segments) => {
-      const time = getSegmentTime(segments[0] || {}, 'departure');
-      const match = time.match(/(?:T|\s)(\d{1,2}):\d{2}/) || time.match(/^(\d{1,2}):\d{2}/);
-      return match ? Number(match[1]) : null;
-    };
-
-    const getFlightOffers = (payload) => {
-      const root = payload?.data?.data ?? payload?.data ?? payload;
-      const candidates = [
-        root?.topFlights,
-        root?.top_flights,
-        root?.best_flights,
-        root?.bestFlights,
-        root?.other_flights,
-        root?.otherFlights,
-        root?.flightOffers,
-        root?.flight_options,
-        root?.flightOptions,
-        root?.all_flights,
-        root?.itineraries,
-        root?.results,
-        root?.flights,
-        payload?.topFlights,
-        payload?.top_flights,
-        payload?.best_flights,
-        payload?.bestFlights,
-        payload?.other_flights,
-        payload?.otherFlights,
-        payload?.flightOffers,
-        payload?.itineraries,
-        payload?.results,
-        Array.isArray(root) ? root : null
-      ];
-      const offers = candidates.filter(Array.isArray).flat();
-      return [...new Set(offers)].filter((offer) => (
-        offer && typeof offer === 'object' && getPrice(offer) && getSegments(offer).length > 0
-      ));
     };
 
     if (isValidDate(departureDate) && isValidDate(arrivalDate)) {
@@ -344,7 +226,8 @@
         departureId,
         arrivalId,
         departureDate,
-        arrivalDate
+        arrivalDate,
+        currency
       });
       const apiBase = window.FLIGHT_API_URL
         ? new URL(window.FLIGHT_API_URL).origin
@@ -479,7 +362,10 @@
           const airlineName = document.createElement('div');
           const airlineTitle = document.createElement('p');
           airlineTitle.className = 'font-extrabold';
-          airlineTitle.textContent = item.airlines.join(' • ') || 'شركة الطيران غير متاحة';
+          airlineTitle.textContent = [
+            item.airlines.join(' • ') || 'شركة الطيران غير متاحة',
+            item.flightNumber ? `رحلة ${item.flightNumber}` : ''
+          ].filter(Boolean).join(' • ');
           const airlineCode = document.createElement('p');
           airlineCode.className = 'text-xs text-slate-400';
           airlineCode.textContent = item.airlineCode ? `رمز الناقل: ${item.airlineCode}` : 'تفاصيل الناقل من مزوّد الرحلة';
@@ -548,6 +434,21 @@
           const price = document.createElement('strong');
           price.className = 'text-2xl font-black text-emerald-700';
           price.textContent = formatPrice(item.price.amount, item.price.currency);
+          const returnDateLabel = document.createElement('span');
+          returnDateLabel.className = 'text-xs text-slate-500';
+          returnDateLabel.textContent = item.returnDate
+            ? `العودة: ${formatDate(item.returnDate)}`
+            : 'سعر تقديري للذهاب والعودة';
+          const bookingLink = document.createElement('a');
+          bookingLink.className = 'rounded-full bg-[var(--color-ink)] px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-[var(--color-ink-soft)]';
+          bookingLink.textContent = 'احجز الآن';
+          bookingLink.href = item.bookingUrl || '#';
+          bookingLink.target = '_blank';
+          bookingLink.rel = 'sponsored nofollow noopener';
+          bookingLink.hidden = !item.bookingUrl;
+          if (item.bookingUrl) {
+            bookingLink.referrerPolicy = 'no-referrer';
+          }
           const badge = document.createElement('span');
           badge.className = 'text-[11px] text-slate-500';
           badge.textContent = index === 0 && currentSort === 'duration'
@@ -557,7 +458,14 @@
               : index === 0
                 ? 'الأقل سعرًا ضمن النتائج'
                 : 'السعر للشخص';
-          pricePanel.append(priceTitle, price, badge);
+          pricePanel.append(priceTitle, price, returnDateLabel, badge);
+          if (item.bookingUrl) pricePanel.append(bookingLink);
+          else {
+            const unavailable = document.createElement('span');
+            unavailable.className = 'text-xs text-slate-500';
+            unavailable.textContent = 'رابط الحجز غير متاح';
+            pricePanel.append(unavailable);
+          }
           layout.append(details, pricePanel);
           card.append(layout);
           results.append(card);
@@ -576,44 +484,6 @@
         document.getElementById('min-price-label').textContent = formatPrice(minimum);
         document.getElementById('max-price-label').textContent = formatPrice(maximum);
         document.getElementById('price-limit-label').textContent = formatPrice(maximum);
-      };
-
-      const renderCalendar = (items) => {
-        calendarStrip.replaceChildren();
-        const valid = items.filter((item) => (
-          item && Number.isFinite(Number(item.price))
-          && isValidDate(item.departureDate)
-          && isValidDate(item.arrivalDate)
-        ));
-        if (valid.length === 0) {
-          document.getElementById('best-calendar-price').textContent = 'لا توجد أسعار تقويمية';
-          return;
-        }
-        const bestPrice = Math.min(...valid.map((item) => Number(item.price)));
-        document.getElementById('best-calendar-price').textContent = `أقل سعر: ${formatPrice(bestPrice)}`;
-        valid.forEach((item) => {
-          const selected = item.departureDate === departureDate;
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = selected
-            ? 'min-w-28 rounded-xl border border-emerald-300 bg-emerald-500/20 p-3 text-white'
-            : 'min-w-28 rounded-xl border border-white/15 bg-white/10 p-3 text-blue-100 transition hover:bg-white/20';
-          button.setAttribute('aria-label', `${formatDate(item.departureDate)}، ${formatPrice(Number(item.price))}`);
-          const day = document.createElement('span');
-          day.className = 'block text-xs font-semibold';
-          day.textContent = formatDate(item.departureDate);
-          const price = document.createElement('span');
-          price.className = 'mt-1 block text-sm font-black';
-          price.textContent = formatPrice(Number(item.price));
-          button.append(day, price);
-          button.addEventListener('click', () => {
-            const next = new URLSearchParams(window.location.search);
-            next.set('departureDate', item.departureDate);
-            next.set('arrivalDate', item.arrivalDate);
-            window.location.assign(`${window.location.pathname}?${next}`);
-          });
-          calendarStrip.append(button);
-        });
       };
 
       filterToggle.addEventListener('click', () => {
@@ -682,108 +552,76 @@
           return payload;
         };
 
-        const calendarParams = new URLSearchParams(params);
-        const flightRequest = (async () => {
-          const outboundPayload = await fetchJson(`${apiBase}/api/flight-roundtrip-outbound?${params}`);
-          const outboundFlights = getFlightOffers(outboundPayload);
-          const uniqueFlights = new Map();
-          outboundFlights.forEach((offer) => {
-            if (typeof offer.returningToken === 'string' && offer.returningToken) {
-              uniqueFlights.set(offer.returningToken, offer);
-            }
-          });
-          const tokenizedFlights = [...uniqueFlights.values()].slice(0, 8);
-          if (tokenizedFlights.length === 0) {
-            throw new Error('لم يُرجع مزوّد الخدمة خيارات ذهاب يمكن استخدامها لجلب رحلات العودة.');
-          }
+        const requestParams = new URLSearchParams({
+          origin: departureId,
+          destination: arrivalId,
+          departure_at: departureDate,
+          return_at: arrivalDate,
+          currency
+        });
 
-          status.hidden = false;
-          status.textContent = 'تم العثور على رحلات الذهاب؛ جارٍ جلب خيارات العودة والأسعار الإجمالية…';
-          const returningResults = await Promise.allSettled(tokenizedFlights.map(async (outbound) => {
-            const returningParams = new URLSearchParams({
-              returningToken: outbound.returningToken,
-              arrivalDate,
-              language: 'en-US'
+        fetchJson(`${apiBase}/api/travelpayouts-prices?${requestParams}`)
+          .then((payload) => {
+            priceItems = payload.data.flatMap((flight) => {
+              const amount = Number(flight.price);
+              if (!Number.isFinite(amount) || amount < 0) return [];
+              const bookingUrl = (() => {
+                if (typeof flight.link !== 'string') return '';
+                try {
+                  const url = new URL(flight.link);
+                  return url.protocol === 'https:' ? url.href : '';
+                } catch {
+                  return '';
+                }
+              })();
+              const airlineCode = typeof flight.airline === 'string' ? flight.airline : '';
+              const flightNumber = flight.flight_number === undefined || flight.flight_number === null
+                ? ''
+                : String(flight.flight_number);
+              const departureTime = typeof flight.departure_at === 'string'
+                ? flight.departure_at
+                : '';
+              const timeMatch = departureTime.match(/T(\d{2}:\d{2})/);
+              const stops = Number(flight.transfers ?? flight.number_of_changes ?? 0);
+              return [{
+                price: { amount, currency: currency.toUpperCase() },
+                segments: [{
+                  departure_airport: { code: departureId },
+                  arrival_airport: { code: arrivalId },
+                  departureTime: timeMatch?.[1] || ''
+                }],
+                airlines: airlineCode ? [airlineCode] : [],
+                stops: Number.isFinite(stops) ? Math.max(0, stops) : 0,
+                airlineCode,
+                flightNumber,
+                bookingUrl,
+                duration: Number.isFinite(Number(flight.duration)) ? Number(flight.duration) : 0,
+                returnDate: typeof flight.return_at === 'string'
+                  && isValidDate(flight.return_at.slice(0, 10))
+                  ? flight.return_at.slice(0, 10)
+                  : arrivalDate,
+                departureHour: timeMatch ? Number(timeMatch[1].slice(0, 2)) : null
+              }];
             });
-            const returningPayload = await fetchJson(
-              `${apiBase}/api/flight-roundtrip?${returningParams}`
-            );
-            return { outbound, returningFlights: getFlightOffers(returningPayload) };
-          }));
 
-          priceItems = returningResults.flatMap((result) => {
-            if (result.status !== 'fulfilled') return [];
-            const { outbound, returningFlights } = result.value;
-            const outboundSegments = getSegments(outbound);
-            return returningFlights.map((returning) => {
-              const returningSegments = getSegments(returning);
-              const segments = [...outboundSegments, ...returningSegments];
-              const airlineNames = (offer) => {
-                const values = [
-                  ...(Array.isArray(offer.airlineNames) ? offer.airlineNames : []),
-                  ...(Array.isArray(offer.airlines) ? offer.airlines : []),
-                  ...(Array.isArray(offer.airline) ? offer.airline : [])
-                ];
-                return values.map((airline) => (
-                  typeof airline === 'string'
-                    ? airline
-                    : airline?.airlineName || airline?.name
-                )).filter(Boolean);
-              };
-              const airlines = [...new Set([
-                ...segments.map(getAirline).filter(Boolean),
-                ...airlineNames(outbound),
-                ...airlineNames(returning)
-              ])];
-              const price = getPrice(returning) || getPrice(outbound);
-              if (!price || segments.length === 0) return null;
-              return {
-                price,
-                segments,
-                airlines,
-                duration: getDuration(outbound) + getDuration(returning),
-                stops: getStopCount(outbound, outboundSegments)
-                  + getStopCount(returning, returningSegments),
-                airlineCode: getAirlineCode(outbound, outboundSegments)
-                  || getAirlineCode(returning, returningSegments),
-                logo: getLogo(outbound, outboundSegments) || getLogo(returning, returningSegments),
-                departureHour: getDepartureHour(outboundSegments)
-              };
-            }).filter(Boolean);
-          });
-          if (priceItems.length === 0) {
-            const failedRequest = returningResults.find((result) => result.status === 'rejected');
-            throw failedRequest?.reason instanceof Error
-              ? failedRequest.reason
-              : new Error('لم يعثر مزوّد الخدمة على رحلات عودة قابلة للعرض لهذا المسار والتاريخ.');
-          }
-          const failedCount = returningResults.filter((result) => result.status === 'rejected').length;
-          renderAirlineFilters();
-          renderStopFilters();
-          setupPriceRange();
-          renderResults();
-          if (failedCount > 0) {
-            status.hidden = false;
-            status.textContent = `عُرضت الرحلات المتاحة؛ تعذّر تحميل خيارات العودة لـ ${failedCount} من رحلات الذهاب.`;
-          }
-        })()
+            if (priceItems.length === 0) {
+              status.hidden = false;
+              status.textContent = 'لا توجد أسعار متاحة لهذا المسار والتاريخ حاليًا.';
+              count.textContent = 'لم يتم العثور على رحلات.';
+              return;
+            }
+            renderAirlineFilters();
+            renderStopFilters();
+            setupPriceRange();
+            renderResults();
+          })
           .catch((error) => {
             status.hidden = false;
-            const message = error instanceof Error ? error.message : '';
-            status.textContent = /could not return full flight details/i.test(message)
-              ? 'تعذر جلب تفاصيل الرحلات كاملة من المزوّد. تحقّق من صلاحية هذا المسار في RapidAPI ثم أعد المحاولة.'
-              : message || 'تعذر تحميل الرحلات؛ حاول مرة أخرى لاحقًا.';
+            status.textContent = error instanceof Error
+              ? error.message
+              : 'تعذر تحميل الرحلات؛ حاول مرة أخرى لاحقًا.';
             count.textContent = 'تعذر تحميل النتائج.';
           });
-
-        const calendarRequest = fetchJson(`${apiBase}/api/flight-price-calendar?${calendarParams}`)
-          .then((payload) => renderCalendar(Array.isArray(payload?.data) ? payload.data : []))
-          .catch(() => {
-            calendarStatus.textContent = 'تعذر تحميل تقويم الأسعار حاليًا.';
-            document.getElementById('best-calendar-price').textContent = 'التقويم غير متاح';
-          });
-
-        Promise.all([flightRequest, calendarRequest]);
       }
     }
   </script>

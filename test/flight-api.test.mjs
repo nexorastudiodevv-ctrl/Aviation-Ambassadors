@@ -4,6 +4,7 @@ import { createFlightAutocompleteHandler } from '../api/flight-autocomplete.js';
 import { createFlightPriceCalendarHandler } from '../api/flight-price-calendar.js';
 import { createFlightRoundTripHandler } from '../api/flight-roundtrip.js';
 import { createFlightRoundTripOutboundHandler } from '../api/flight-roundtrip-outbound.js';
+import { createTravelpayoutsPricesHandler } from '../api/travelpayouts-prices.js';
 
 function createResponse(statusCode, body = null) {
   return {
@@ -41,6 +42,7 @@ async function invoke(handler, { method = 'GET', url, query }, options = {}) {
 
 const testEnvironment = {
   RAPIDAPI_KEY: 'test-secret',
+  TRAVELPAYOUTS_TOKEN: 'travelpayouts-test-secret',
   FLIGHT_ALLOWED_ORIGINS: 'https://avam.nexorastudio-eg.com'
 };
 
@@ -139,23 +141,22 @@ test('autocomplete distinguishes Oman from Amman in Arabic', async () => {
   assert.deepEqual(queries, ['Muscat', 'Amman']);
 });
 
-test('autocomplete reports unsupported Arabic names without calling provider', async () => {
-  let requestCount = 0;
+test('autocomplete passes Arabic place names outside the alias list to the provider', async () => {
+  let requestedUrl;
   const handler = createFlightAutocompleteHandler({
     env: testEnvironment,
-    fetchImpl: async () => {
-      requestCount += 1;
+    fetchImpl: async (url) => {
+      requestedUrl = new URL(url);
       return { ok: true, json: async () => ({ data: [] }) };
     }
   });
 
   const response = await invoke(handler, {
-    url: `/api/flight-autocomplete?query=${encodeURIComponent('مدينة غير مدعومة')}`
+    url: `/api/flight-autocomplete?query=${encodeURIComponent('مدينة عربية أخرى')}`
   });
 
-  assert.equal(response.statusCode, 400);
-  assert.match(response.body.message, /بالإنجليزية/);
-  assert.equal(requestCount, 0);
+  assert.equal(response.statusCode, 200);
+  assert.equal(requestedUrl.searchParams.get('query'), 'مدينة عربية أخرى');
 });
 
 test('autocomplete keeps only Arab-country places', async () => {
@@ -169,6 +170,7 @@ test('autocomplete keeps only Arab-country places', async () => {
           { info: { shortName: 'Dubai - United Arab Emirates' }, nearbyAirports: [] },
           { info: { shortName: 'Manama, Bahrain' }, nearbyAirports: [] },
           { info: { shortName: 'Riyadh', description: 'Capital of Saudi Arabia' }, nearbyAirports: [] },
+          { info: { shortName: 'A city with country code only', countryCode: 'OM' }, nearbyAirports: [] },
           { info: { shortName: 'London, United Kingdom' }, nearbyAirports: [] }
         ],
         status: true
@@ -181,7 +183,7 @@ test('autocomplete keeps only Arab-country places', async () => {
   assert.equal(response.statusCode, 200);
   assert.deepEqual(
     response.body.data.map((place) => place.info.shortName),
-    ['Cairo, Egypt', 'Dubai - United Arab Emirates', 'Manama, Bahrain', 'Riyadh']
+    ['Cairo, Egypt', 'Dubai - United Arab Emirates', 'Manama, Bahrain', 'Riyadh', 'A city with country code only']
   );
 });
 
@@ -309,6 +311,110 @@ test('round-trip returning search passes the token and return date to provider',
   assert.equal(requestedUrl.searchParams.get('arrivalDate'), arrivalDate);
   assert.equal(requestedUrl.searchParams.get('currency'), 'SAR');
   assert.equal(requestedUrl.searchParams.get('language'), 'en-US');
+});
+
+test('Travelpayouts prices validate input and keep the API token server-side', async () => {
+  const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
+  const returnDate = nextDate(departureDate, 7);
+  let requestedUrl;
+  let requestedHeaders;
+  const providerPayload = {
+    success: true,
+    currency: 'sar',
+    data: [{
+      origin: 'CAI',
+      destination: 'DXB',
+      price: 830,
+      airline: 'MS',
+      flight_number: 123,
+      departure_at: `${departureDate}T10:00:00Z`,
+      return_at: `${returnDate}T16:00:00Z`,
+      transfers: 0,
+      link: 'https://www.aviasales.com/example'
+    }]
+  };
+  const handler = createTravelpayoutsPricesHandler({
+    env: testEnvironment,
+    fetchImpl: async (url, options) => {
+      requestedUrl = new URL(url);
+      requestedHeaders = options.headers;
+      return { ok: true, json: async () => providerPayload };
+    }
+  });
+
+  const response = await invoke(handler, {
+    url: `/api/travelpayouts-prices?origin=cai&destination=dxb&departure_at=${departureDate}&return_at=${returnDate}&currency=SAR`
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(requestedUrl.origin, 'https://api.travelpayouts.com');
+  assert.equal(requestedUrl.pathname, '/aviasales/v3/prices_for_dates');
+  assert.equal(requestedUrl.searchParams.get('origin'), 'CAI');
+  assert.equal(requestedUrl.searchParams.get('destination'), 'DXB');
+  assert.equal(requestedUrl.searchParams.get('departure_at'), departureDate);
+  assert.equal(requestedUrl.searchParams.get('return_at'), returnDate);
+  assert.equal(requestedUrl.searchParams.get('currency'), 'sar');
+  assert.equal(requestedHeaders['x-access-token'], 'travelpayouts-test-secret');
+  assert.equal(JSON.stringify(response.body).includes('travelpayouts-test-secret'), false);
+  assert.deepEqual(response.body.data, providerPayload.data);
+});
+
+test('Travelpayouts prices reject invalid routes and missing credentials without provider calls', async () => {
+  let requestCount = 0;
+  const configured = createTravelpayoutsPricesHandler({
+    env: testEnvironment,
+    fetchImpl: async () => {
+      requestCount += 1;
+      return { ok: true, json: async () => ({ success: true, data: [] }) };
+    }
+  });
+  const departureDate = nextDate(new Date().toISOString().slice(0, 10), 10);
+  const returnDate = nextDate(departureDate, 1);
+
+  const invalid = await invoke(configured, {
+    url: `/api/travelpayouts-prices?origin=CAIRO&destination=DXB&departure_at=${departureDate}&return_at=${returnDate}`
+  });
+  assert.equal(invalid.statusCode, 400);
+
+  const unsupportedCurrency = await invoke(configured, {
+    url: `/api/travelpayouts-prices?origin=CAI&destination=DXB&departure_at=${departureDate}&return_at=${returnDate}&currency=XYZ`
+  });
+  assert.equal(unsupportedCurrency.statusCode, 400);
+
+  const missingToken = createTravelpayoutsPricesHandler({
+    env: { FLIGHT_ALLOWED_ORIGINS: testEnvironment.FLIGHT_ALLOWED_ORIGINS },
+    fetchImpl: configured.fetchImpl
+  });
+  const unconfigured = await invoke(missingToken, {
+    url: `/api/travelpayouts-prices?origin=CAI&destination=DXB&departure_at=${departureDate}&return_at=${returnDate}`
+  });
+  assert.equal(unconfigured.statusCode, 503);
+  assert.equal(requestCount, 0);
+});
+
+test('Travelpayouts prices reject unapproved website origins', async () => {
+  let requestCount = 0;
+  const handler = createTravelpayoutsPricesHandler({
+    env: testEnvironment,
+    fetchImpl: async () => {
+      requestCount += 1;
+      return { ok: true, json: async () => ({ success: true, data: [] }) };
+    }
+  });
+  const req = {
+    method: 'GET',
+    url: '/api/travelpayouts-prices',
+    headers: { origin: 'https://unapproved.example' }
+  };
+  const res = createResponse(200);
+  res.end = () => {
+    res.ended = true;
+  };
+
+  await handler(req, res);
+
+  assert.equal(res.statusCode, 403);
+  assert.equal(requestCount, 0);
 });
 
 test('round-trip outbound and returning searches reject invalid parameters before calling provider', async () => {

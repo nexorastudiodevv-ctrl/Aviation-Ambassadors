@@ -152,13 +152,13 @@
           <div class="mx-auto mt-6 grid max-w-2xl gap-4 sm:grid-cols-2">
             <div class="relative">
               <label for="flight-departure-place" class="mb-2 block text-sm font-bold">مدينة أو مطار المغادرة</label>
-              <input id="flight-departure-place" type="search" autocomplete="off" required placeholder="اكتب مدينة مثل القاهرة أو Cairo" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+              <input id="flight-departure-place" type="search" autocomplete="off" required placeholder="اكتب مدينة أو مطارًا عربيًا مثل القاهرة" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
               <input id="flight-departure-id" type="hidden">
               <div id="flight-departure-suggestions" class="absolute inset-x-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl" role="listbox" hidden></div>
             </div>
             <div class="relative">
               <label for="flight-arrival-place" class="mb-2 block text-sm font-bold">مدينة أو مطار الوصول</label>
-              <input id="flight-arrival-place" type="search" autocomplete="off" required placeholder="اكتب مدينة مثل دبي أو Dubai" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+              <input id="flight-arrival-place" type="search" autocomplete="off" required placeholder="اكتب مدينة أو مطارًا عربيًا مثل دبي" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
               <input id="flight-arrival-id" type="hidden">
               <div id="flight-arrival-suggestions" class="absolute inset-x-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl" role="listbox" hidden></div>
             </div>
@@ -169,6 +169,14 @@
             <div id="flight-return-date-field">
               <label for="flight-return-date" class="mb-2 block text-sm font-bold">تاريخ العودة</label>
               <input id="flight-return-date" name="arrivalDate" type="date" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+            </div>
+            <div class="sm:col-span-2">
+              <label for="flight-currency" class="mb-2 block text-sm font-bold">عملة الأسعار</label>
+              <select id="flight-currency" name="currency" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-sun">
+                <option value="SAR" selected>ريال سعودي (SAR)</option>
+                <option value="USD">دولار أمريكي (USD)</option>
+                <option value="EUR">يورو (EUR)</option>
+              </select>
             </div>
           </div>
           <div class="mt-6 text-center">
@@ -460,18 +468,15 @@
       const collectSuggestions = (data) => {
         const places = data?.data;
         if (Array.isArray(places) && places.some((place) => Array.isArray(place?.nearbyAirports))) {
-          const bestMatch = places
-            .filter((place) => Array.isArray(place?.nearbyAirports))
-            .sort((first, second) => (
-              Number(second.info?.confidenceScore || 0) - Number(first.info?.confidenceScore || 0)
-            ))[0];
-          return (bestMatch?.nearbyAirports || [])
-            .map(({ airport }) => airport && getSuggestion({
-              ...airport,
-              cityName: airport.cityName || bestMatch.info?.cityName
-            }))
-            .filter(Boolean)
-            .slice(0, 8);
+          const suggestions = places.flatMap((place) => (
+            Array.isArray(place.nearbyAirports)
+              ? place.nearbyAirports.map(({ airport }) => airport && getSuggestion({
+                ...airport,
+                cityName: airport.cityName || place.info?.cityName
+              }))
+              : []
+          )).filter(Boolean);
+          return [...new Map(suggestions.map((suggestion) => [suggestion.id, suggestion])).values()];
         }
 
         const items = [];
@@ -493,7 +498,7 @@
         };
 
         visit(data?.data ?? data);
-        return items.slice(0, 8);
+        return [...new Map(items.map((suggestion) => [suggestion.id, suggestion])).values()];
       };
 
       const setupPlaceAutocomplete = (input, idInput, suggestionsElement) => {
@@ -620,6 +625,7 @@
           arrivalId: destinationId,
           departureDate: departureDateInput.value,
           arrivalDate: returnDateInput.value,
+          currency: document.getElementById('flight-currency').value,
           departureName: departurePlaceInput.value,
           arrivalName: arrivalPlaceInput.value
         });

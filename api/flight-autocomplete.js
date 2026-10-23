@@ -1,35 +1,9 @@
 import {
   createRapidApiHandler,
-  RequestValidationError,
   requireText
 } from '../lib/rapidapi.js';
 
 const ARABIC_PLACE_ALIASES = new Map([
-  ['مصر', 'Cairo'],
-  ['السعودية', 'Riyadh'],
-  ['الإمارات', 'Dubai'],
-  ['الامارات', 'Dubai'],
-  ['قطر', 'Doha'],
-  ['الكويت', 'Kuwait City'],
-  ['الأردن', 'Amman'],
-  ['الاردن', 'Amman'],
-  ['سلطنة عمان', 'Muscat'],
-  ['عُمان', 'Muscat'],
-  ['البحرين', 'Manama'],
-  ['المغرب', 'Casablanca'],
-  ['تونس', 'Tunis'],
-  ['الجزائر', 'Algiers'],
-  ['السودان', 'Khartoum'],
-  ['العراق', 'Baghdad'],
-  ['لبنان', 'Beirut'],
-  ['ليبيا', 'Tripoli'],
-  ['سوريا', 'Damascus'],
-  ['اليمن', "Sana'a"],
-  ['موريتانيا', 'Nouakchott'],
-  ['الصومال', 'Mogadishu'],
-  ['جيبوتي', 'Djibouti'],
-  ['جزر القمر', 'Moroni'],
-  ['فلسطين', 'Ramallah'],
   ['القاهرة', 'Cairo'],
   ['القاهره', 'Cairo'],
   ['دبي', 'Dubai'],
@@ -104,6 +78,8 @@ const ARABIC_PLACE_ALIASES = new Map([
   ['عمان الأردن', 'Amman'],
   ['مكة', 'Jeddah'],
   ['مكة المكرمة', 'Jeddah'],
+  ['عُمان', 'Muscat'],
+  ['سلطنة عمان', 'Muscat'],
   ['أنقرة', 'Ankara'],
   ['انقرة', 'Ankara'],
   ['روما', 'Rome'],
@@ -135,7 +111,10 @@ const ARABIC_PLACE_ALIASES = new Map([
   ['ميامي', 'Miami']
 ]);
 
-const ARABIC_CHARACTERS = /[\u0600-\u06FF]/;
+const ARAB_COUNTRY_CODES = new Set([
+  'AE', 'BH', 'DZ', 'DJ', 'EG', 'IQ', 'JO', 'KM', 'KW', 'LB', 'LY',
+  'MA', 'MR', 'OM', 'PS', 'QA', 'SA', 'SD', 'SO', 'SY', 'TN', 'YE'
+]);
 const ARAB_COUNTRY_NAMES = [
   'Algeria',
   'Bahrain',
@@ -162,7 +141,21 @@ const ARAB_COUNTRY_NAMES = [
 ];
 
 function isInArabCountry(place) {
-  const location = `${place?.info?.shortName || ''} ${place?.info?.description || ''}`;
+  const countryCode = String(
+    place?.info?.countryCode
+      || place?.countryCode
+      || place?.country?.code
+      || ''
+  ).toUpperCase();
+  if (ARAB_COUNTRY_CODES.has(countryCode)) return true;
+
+  const location = [
+    place?.info?.shortName,
+    place?.info?.description,
+    place?.info?.countryName,
+    place?.countryName,
+    place?.country?.name
+  ].filter(Boolean).join(' ');
   return ARAB_COUNTRY_NAMES.some((country) => {
     const expression = new RegExp(`\\b${country.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
     return expression.test(location);
@@ -176,10 +169,6 @@ function normalizeQuery(query) {
     .trim();
   const normalized = original.replace(/[\u064B-\u065F\u0670\u0640]/g, '');
   const alias = ARABIC_PLACE_ALIASES.get(original) || ARABIC_PLACE_ALIASES.get(normalized);
-
-  if (ARABIC_CHARACTERS.test(normalized) && !alias) {
-    throw new RequestValidationError('اكتب اسم مدينة مدعومة بالعربية أو أدخل اسمها بالإنجليزية.');
-  }
 
   return alias || normalized;
 }
