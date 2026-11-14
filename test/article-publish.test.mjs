@@ -11,18 +11,18 @@ test('draft articles do not trigger a site build', () => {
   assert.equal(shouldTriggerBuild({ status: 'draft' }), false);
 });
 
-test('GitHub Pages can use a Vercel API trigger when configured', () => {
+test('hosted publishing does not depend on a Vercel API', () => {
   assert.equal(
     getBuildTriggerMode({
-      hostname: 'nexorastudiodevv-ctrl.github.io',
+      hostname: 'avam.nexorastudio-eg.com',
       publishApiUrl: 'https://site-publisher.vercel.app/api/publish'
     }),
-    'vercel-api'
+    'scheduled-static'
   );
 });
 
-test('GitHub Pages uses the deferred no-server flow', () => {
-  assert.equal(getBuildTriggerMode({ hostname: 'nexorastudiodevv-ctrl.github.io' }), 'static-host');
+test('GitHub Pages uses scheduled article publishing', () => {
+  assert.equal(getBuildTriggerMode({ hostname: 'nexorastudiodevv-ctrl.github.io' }), 'scheduled-static');
 });
 
 test('localhost still allows the local build trigger', () => {

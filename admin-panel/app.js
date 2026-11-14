@@ -3,10 +3,7 @@ import {
   normalizeArticleSlug,
   saveArticleDocument
 } from './article-publish-utils.mjs';
-
-function shouldTriggerBuild(article = {}) {
-  return article.status === 'published';
-}
+import { getBuildTriggerMode, shouldTriggerBuild } from '../scripts/article-publish-utils.mjs';
 
 const state = {
   currentView: 'dashboard',
@@ -298,77 +295,17 @@ function openEditorForArticle(id) {
   showView('editor');
 }
 
-function getConfiguredPublishApiUrl() {
-  const candidates = [
-    window.PUBLISH_API_URL,
-    window.VERCEL_PUBLISH_API,
-    window.BUILD_TRIGGER_API
-  ].filter(Boolean);
-
-  return candidates[0] ? String(candidates[0]).trim().replace(/\/$/, '') : '';
-}
-
-function getBuildTriggerMode(location = window.location) {
-  const host = (location?.hostname || '').toLowerCase();
-  const publishApiUrl = getConfiguredPublishApiUrl();
-  const isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]'].includes(host)
-    || host.endsWith('.local');
-
-  if (isLocalHost || location?.protocol === 'file:') {
-    return 'local-server';
-  }
-
-  if (publishApiUrl) {
-    return 'vercel-api';
-  }
-
-  return 'static-host';
-}
-
 async function triggerSiteBuildIfNeeded(payload) {
   if (!shouldTriggerBuild(payload)) {
     return { ok: true, skipped: true };
   }
 
-  const triggerMode = getBuildTriggerMode(window.location);
-  const publishApiUrl = getConfiguredPublishApiUrl();
-
-  if (triggerMode === 'vercel-api') {
-    const endpoint = publishApiUrl.includes('/api/publish')
-      ? publishApiUrl
-      : `${publishApiUrl}/api/publish`;
-
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        return { ok: false, deferred: false, message: result.message || 'تعذّر إرسال الطلب إلى Vercel API.' };
-      }
-
-      return { ok: true, skipped: false, result };
-    } catch (error) {
-      console.error(error);
-      return {
-        ok: false,
-        deferred: false,
-        message: 'تعذّر الاتصال بـ Vercel API لتحديث الموقع.'
-      };
-    }
-  }
-
-  if (triggerMode !== 'local-server') {
+  if (getBuildTriggerMode(window.location) !== 'local-server') {
     return {
-      ok: false,
+      ok: true,
+      skipped: true,
       deferred: true,
-      message: 'هذا الموقع يعمل كصفحة ثابتة، لذلك لا يمكن بناء النشرة فورًا من المتصفح. احفظ المقال في Firebase ثم شغّل سير "Publish Firebase articles" في GitHub Actions أو قم بتهيئة رابط Vercel API في إعدادات اللوحة.'
+      message: 'تم حفظ المقال؛ سينشره الموقع تلقائيًا عبر GitHub Actions عند التشغيل المجدول، عادةً خلال 15 دقيقة.'
     };
   }
 
@@ -442,8 +379,8 @@ async function saveArticle() {
 
   let articleWasSaved = false;
   saveArticleButton.disabled = true;
-  saveArticleButton.textContent = isPublished ? 'جارٍ الحفظ والنشر...' : 'جارٍ الحفظ...';
-  setMessage(isPublished ? 'جارٍ حفظ المقال ونشره مباشرة على الموقع...' : 'جارٍ حفظ المسودة...', false);
+  saveArticleButton.textContent = 'جارٍ الحفظ...';
+  setMessage(isPublished ? 'جارٍ حفظ المقال...' : 'جارٍ حفظ المسودة...', false);
 
   try {
     const savedArticleId = await saveArticleDocument(
@@ -467,7 +404,11 @@ async function saveArticle() {
     showView('dashboard');
     resetForm();
     setMessage(isPublished
-      ? (triggerResult.skipped ? 'تم حفظ المقال بنجاح، لكن النشر تم تأجيله.' : 'تم حفظ المقال ونشره مباشرة على الموقع.')
+      ? (triggerResult.deferred
+        ? triggerResult.message
+        : triggerResult.skipped
+          ? 'تم حفظ المقال بنجاح، لكن النشر تم تأجيله.'
+          : 'تم حفظ المقال ونشره مباشرة على الموقع.')
       : 'تم حفظ المسودة بنجاح.', false);
   } catch (error) {
     console.error(error);
